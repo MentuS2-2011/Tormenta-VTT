@@ -1,4 +1,4 @@
-// Livro.jsx - Versão atualizada
+// Livro.jsx - Versão com PDFs no Netlify
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { 
@@ -19,92 +19,82 @@ import {
 import { FiDownload, FiBookOpen, FiExternalLink, FiFolder, FiFile, FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import './Livro.css'
 
-// Importação direta dos PDFs
-import AmeacasDeArton from '../assets/books/Ameaças-de-Arton.pdf'
-import AtlasDeArton from '../assets/books/Atlas-de-Arton.pdf'
-import HeroisDeArton from '../assets/books/Heróis-de-Arton.pdf'
-import LivroBasico from '../assets/books/Livro-Básico.pdf'
-import DeusesDeArton from '../assets/books/Deuses-de-Arton.pdf'
-import DistincoesChelias from '../assets/books/distincoes-para-chelias.pdf'
-import GuiaDeusesMenores from '../assets/books/Guia-de-Deuses-Menores.pdf'
+// ═══════════════════════════════════════════════
+// URLs dos PDFs no Netlify
+// ═══════════════════════════════════════════════
 
-// Importação das revistas
-// Dragão Brasil (assumindo que são PDFs individuais)
-import DB180 from '../assets/books/DragaoBrasil/DB-180.pdf'
-import DB182 from '../assets/books/DragaoBrasil/DB-182.pdf'
-import DB183 from '../assets/books/DragaoBrasil/DB-183.pdf'
-import DB199 from '../assets/books/DragaoBrasil/DB-199.pdf'
-import DB210 from '../assets/books/DragaoBrasil/DB-210.pdf'
-import DB210Extra from '../assets/books/DragaoBrasil/DB-210-Extra.pdf'
-import DB211 from '../assets/books/DragaoBrasil/DB-211.pdf'
-import DB211Extra from '../assets/books/DragaoBrasil/DB-211-Extra.pdf'
-import DB212 from '../assets/books/DragaoBrasil/DB-212.pdf'
-import DB212Extra from '../assets/books/DragaoBrasil/DB-212-Extra.pdf'
-import DB213 from '../assets/books/DragaoBrasil/DB-213.pdf'
-import DB213Extra from '../assets/books/DragaoBrasil/DB-213-Extra.pdf'
-import DB214 from '../assets/books/DragaoBrasil/DB-214.pdf'
-import DB214Extra from '../assets/books/DragaoBrasil/DB-214-Extra.pdf'
-import DB215 from '../assets/books/DragaoBrasil/DB-215.pdf'
-import DB215Extra from '../assets/books/DragaoBrasil/DB-215-Extra.pdf'
-import DB216 from '../assets/books/DragaoBrasil/DB-216.pdf'
-import DB216Extra from '../assets/books/DragaoBrasil/DB-216-Extra.pdf'
-import DB217 from '../assets/books/DragaoBrasil/DB-217.pdf'
-import DB217Extra from '../assets/books/DragaoBrasil/DB-217-Extra.pdf'
-import DB218 from '../assets/books/DragaoBrasil/DB-218.pdf'
-import DB218Extra from '../assets/books/DragaoBrasil/DB-218-Extra.pdf'
-import DB219 from '../assets/books/DragaoBrasil/DB-219.pdf'
-import DB219Extra from '../assets/books/DragaoBrasil/DB-219-Extra.pdf'
-import DB220 from '../assets/books/DragaoBrasil/DB-220.pdf'
-import DB220Extra from '../assets/books/DragaoBrasil/DB-220-Extra.pdf'
-import DB221 from '../assets/books/DragaoBrasil/DB-221.pdf'
-import DB221Extra from '../assets/books/DragaoBrasil/DB-221-Extra.pdf'
-import DB222 from '../assets/books/DragaoBrasil/DB-222.pdf'
-import DB222Extra from '../assets/books/DragaoBrasil/DB-222-Extra.pdf'
-import DB223 from '../assets/books/DragaoBrasil/DB-223.pdf'
-import DB224 from '../assets/books/DragaoBrasil/DB-224.pdf'
-import DB225 from '../assets/books/DragaoBrasil/DB-225.pdf'
-import DB226 from '../assets/books/DragaoBrasil/DB-226.pdf'
-import DB227 from '../assets/books/DragaoBrasil/DB-227.pdf'
-// ... adicione todas as edições disponíveis
+// Base URL do seu site no Netlify
+const NETLIFY_BASE_URL = 'https://livrostormenta20.netlify.app'
 
-// Revista Tormenta 20 - Duelo de Dragões
-import RT20_10 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-10.pdf'
-import RT20_11 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-11.pdf'
-import RT20_12 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-12.pdf'
-import RT20_13 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-13.pdf'
-import RT20_14 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-14.pdf'
-import RT20_15 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-15.pdf'
-import RT20_16 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-16.pdf'
-import RT20_17 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-17.pdf'
-import RT20_18 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-18.pdf'
-import RT20_19 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-19.pdf'
-import RT20_20 from '../assets/books/RevistaTormenta20/Duelo_de_dragoes-(completo)/RT20-20.pdf'
-
-// Revista Tormenta 20 - Fulgor dos Deuses
-import RT20_21 from '../assets/books/RevistaTormenta20/Fulgor_dos_Deuses-(EmAndamento)/RT20-21.pdf'
-import RT20_22 from '../assets/books/RevistaTormenta20/Fulgor_dos_Deuses-(EmAndamento)/RT20-22.pdf'
-import RT20_23 from '../assets/books/RevistaTormenta20/Fulgor_dos_Deuses-(EmAndamento)/RT20-23.pdf'
-import RT20_24 from '../assets/books/RevistaTormenta20/Fulgor_dos_Deuses-(EmAndamento)/RT20-24.pdf'
-import RT20_25 from '../assets/books/RevistaTormenta20/Fulgor_dos_Deuses-(EmAndamento)/RT20-25.pdf'
-import RT20_26 from '../assets/books/RevistaTormenta20/Fulgor_dos_Deuses-(EmAndamento)/RT20-26.pdf'
-import RT20_27 from '../assets/books/RevistaTormenta20/Fulgor_dos_Deuses-(EmAndamento)/RT20-27.pdf'
-
-/* ─────────────────────────────────────────────
-   Livro.jsx - Página de livros e revistas
-   ───────────────────────────────────────────── */
-
-// Interface para pacotes de revistas
-class MagazineBundle {
-  constructor(name, editions, icon, color, accentColor, extras = null) {
-    this.name = name
-    this.editions = editions
-    this.icon = icon
-    this.color = color
-    this.accentColor = accentColor
-    this.extras = extras // Arquivos extras que vêm junto
-  }
+// Mapeamento dos PDFs com URLs completas
+const PDF_URLS = {
+  'Livro-Basico.pdf': 'https://livrostormenta20.netlify.app/Livros/Livro-B%C3%A1sico.pdf',
+  'Ameacas-de-Arton.pdf': 'https://livrostormenta20.netlify.app/Livros/Amea%C3%A7as-de-Arton.pdf',
+  'Herois-de-Arton.pdf': 'https://livrostormenta20.netlify.app/Livros/Her%C3%B3is-de-Arton.pdf',
+  'Atlas-de-Arton.pdf': 'https://livrostormenta20.netlify.app/Livros/Atlas-de-Arton.pdf',
+  'Deuses-de-Arton.pdf': 'https://livrostormenta20.netlify.app/Livros/Deuses-de-Arton.pdf',
+  'Guia-de-Deuses-Menores.pdf': 'https://livrostormenta20.netlify.app/Livros/Guia-de-Deuses-Menores.pdf',
+  'distincoes-para-chelias.pdf': 'https://livrostormenta20.netlify.app/Livros/distincoes-para-chelias.pdf',
+  
+  // Dragão Brasil
+  'DB-180.pdf': 'https://livrostormenta20.netlify.app/DB/DB-180.pdf',
+  'DB-182.pdf': 'https://livrostormenta20.netlify.app/DB/DB-182.pdf',
+  'DB-183.pdf': 'https://livrostormenta20.netlify.app/DB/DB-183.pdf',
+  'DB-199.pdf': 'https://livrostormenta20.netlify.app/DB/DB-199.pdf',
+  'DB-210.pdf': 'https://livrostormenta20.netlify.app/DB/DB-210.pdf',
+  'DB-210-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_210-Extra.pdf',
+  'DB-211.pdf': 'https://livrostormenta20.netlify.app/DB/DB-211.pdf',
+  'DB-211-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_211-Extra.pdf',
+  'DB-212.pdf': 'https://livrostormenta20.netlify.app/DB/DB-212.pdf',
+  'DB-212-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_212-Extra.pdf',
+  'DB-213.pdf': 'https://livrostormenta20.netlify.app/DB/DB-213.pdf',
+  'DB-213-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_213-Extra.pdf',
+  'DB-214.pdf': 'https://livrostormenta20.netlify.app/DB/DB-214.pdf',
+  'DB-214-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_214-Extra.pdf',
+  'DB-215.pdf': 'https://livrostormenta20.netlify.app/DB/DB-215.pdf',
+  'DB-215-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_215-Extra.pdf',
+  'DB-216.pdf': 'https://livrostormenta20.netlify.app/DB/DB-216.pdf',
+  'DB-216-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_216-Extra.pdf',
+  'DB-217.pdf': 'https://livrostormenta20.netlify.app/DB/DB-217.pdf',
+  'DB-217-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_217-Extra.pdf',
+  'DB-218.pdf': 'https://livrostormenta20.netlify.app/DB/DB-218.pdf',
+  'DB-218-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_218-Extra.pdf',
+  'DB-219.pdf': 'https://livrostormenta20.netlify.app/DB/DB-219.pdf',
+  'DB-219-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_219-Extra.pdf',
+  'DB-220.pdf': 'https://livrostormenta20.netlify.app/DB/DB-220.pdf',
+  'DB-220-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_220-Extra.pdf',
+  'DB-221.pdf': 'https://livrostormenta20.netlify.app/DB/DB-221.pdf',
+  'DB-221-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_221-Extra.pdf',
+  'DB-222.pdf': 'https://livrostormenta20.netlify.app/DB/DB-222.pdf',
+  'DB-222-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_222-Extra.pdf',
+  'DB-223.pdf': 'https://livrostormenta20.netlify.app/DB/DB-223.pdf',
+  'DB-224.pdf': 'https://livrostormenta20.netlify.app/DB/DB-224.pdf',
+  'DB-225.pdf': 'https://livrostormenta20.netlify.app/DB/DB-225.pdf',
+  'DB-226.pdf': 'https://livrostormenta20.netlify.app/DB/DB-226.pdf',
+  'DB-227.pdf': 'https://livrostormenta20.netlify.app/DB/DB-227.pdf',
+  
+  // RT Duelo de Dragões
+  'RT20-10.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-10.pdf',
+  'RT20-11.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-11.pdf',
+  'RT20-12.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-12.pdf',
+  'RT20-13.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-13.pdf',
+  'RT20-14.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-14.pdf',
+  'RT20-15.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-15.pdf',
+  'RT20-16.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-16.pdf',
+  'RT20-17.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-17.pdf',
+  'RT20-18.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-18.pdf',
+  'RT20-19.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-19.pdf',
+  'RT20-20.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-20.pdf',
+  
+  // RT Fulgor dos Deuses
+  'RT20-21.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-21.pdf',
+  'RT20-22.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-22.pdf',
+  'RT20-23.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-23.pdf',
+  'RT20-24.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-24.pdf',
+  'RT20-25.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-25.pdf',
+  'RT20-26.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-26.pdf',
+  'RT20-27.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-27.pdf',
 }
-
 // Dados dos livros oficiais
 const booksData = [
   {
@@ -112,7 +102,7 @@ const booksData = [
     title: 'Livro Básico',
     subtitle: 'Tormenta 20',
     description: 'O livro fundamental do sistema Tormenta 20. Contém todas as regras essenciais, classes, raças, magias e equipamentos para suas aventuras em Arton.',
-    pdfUrl: LivroBasico,
+    pdfKey: 'Livro-Basico.pdf',
     icon: <GiSpellBook size={48} />,
     color: '#8B1A1A',
     accentColor: '#B22222',
@@ -126,7 +116,7 @@ const booksData = [
     title: 'Ameaças de Arton',
     subtitle: 'O Melhorário',
     description: 'Mais de 300 ameaças para desafiar os heróis! De monstros clássicos a criaturas lendárias, este livro expande o bestiário de Tormenta 20 com perigos inesquecíveis.',
-    pdfUrl: AmeacasDeArton,
+    pdfKey: 'Ameacas-de-Arton.pdf',
     icon: <GiCrownedSkull size={48} />,
     color: '#2D4A3E',
     accentColor: '#3A6B58',
@@ -140,7 +130,7 @@ const booksData = [
     title: 'Heróis de Arton',
     subtitle: 'Guia do Aventureiro',
     description: 'Expanda as possibilidades dos seus personagens! Novos poderes, origens, distinções e um sistema de reputação para heróis que buscam a glória.',
-    pdfUrl: HeroisDeArton,
+    pdfKey: 'Herois-de-Arton.pdf',
     icon: <GiAchievement size={48} />,
     color: '#4A6B3A',
     accentColor: '#6B9A4A',
@@ -154,7 +144,7 @@ const booksData = [
     title: 'Atlas de Arton',
     subtitle: 'O Mundo dos Deuses',
     description: 'Explore o continente de Arton em detalhes! Descubra as nações, reinos, pontos de interesse e a rica história que faz deste mundo um cenário único.',
-    pdfUrl: AtlasDeArton,
+    pdfKey: 'Atlas-de-Arton.pdf',
     icon: <GiWorld size={48} />,
     color: '#3A4A6B',
     accentColor: '#5A6B8A',
@@ -168,7 +158,7 @@ const booksData = [
     title: 'Deuses de Arton',
     subtitle: 'O Panteão Divino',
     description: 'Conheça os vinte deuses maiores e menores de Arton! Seus domínios, poderes concedidos, devotos e a influência divina no mundo.',
-    pdfUrl: DeusesDeArton,
+    pdfKey: 'Deuses-de-Arton.pdf',
     icon: <GiHolySymbol size={48} />,
     color: '#6B3A4A',
     accentColor: '#8A4A5A',
@@ -182,7 +172,7 @@ const booksData = [
     title: 'Guia de Deuses Menores',
     subtitle: 'Poderes Esquecidos',
     description: 'Explore os deuses menores de Arton, entidades de poder limitado mas grande influência. Novos poderes, domínios e caminhos divinos para seus personagens.',
-    pdfUrl: GuiaDeusesMenores,
+    pdfKey: 'Guia-de-Deuses-Menores.pdf',
     icon: <GiHolySymbol size={48} />,
     color: '#7B5A3A',
     accentColor: '#9B7A5A',
@@ -196,7 +186,7 @@ const booksData = [
     title: 'Distinções para Chélias',
     subtitle: 'Honra e Glória',
     description: 'Explore as distinções únicas do reino de Chélias! Ordens de cavalaria, títulos nobiliárquicos e caminhos de prestígio.',
-    pdfUrl: DistincoesChelias,
+    pdfKey: 'distincoes-para-chelias.pdf',
     icon: <GiCrown size={48} />,
     color: '#4A3A6B',
     accentColor: '#6A4A8A',
@@ -210,55 +200,55 @@ const booksData = [
 // Dados das coleções de revistas
 const magazineCollections = [
   {
-  id: 'dragao_brasil',
-  title: 'Dragão Brasil',
-  subtitle: 'Coleção Especial',
-  description: 'A icônica revista de RPG brasileira. Cada edição traz aventuras, matérias especiais, novas regras e conteúdo exclusivo para diversos sistemas.',
-  icon: <GiDragonBreath size={48} />,
-  color: '#8B4513',
-  accentColor: '#CD5C5C',
-  category: 'Revistas',
-  type: 'magazine_collection',
-  editions: [
-    { number: 180, url: DB180, title: 'Dragão Brasil #180' },
-    { number: 182, url: DB182, title: 'Dragão Brasil #182' },
-    { number: 183, url: DB183, title: 'Dragão Brasil #183' },
-    { number: 199, url: DB199, title: 'Dragão Brasil #199' },
-    { number: 210, url: DB210, title: 'Dragão Brasil #210', hasExtra: true },
-    { number: 211, url: DB211, title: 'Dragão Brasil #211', hasExtra: true },
-    { number: 212, url: DB212, title: 'Dragão Brasil #212', hasExtra: true },
-    { number: 213, url: DB213, title: 'Dragão Brasil #213', hasExtra: true },
-    { number: 214, url: DB214, title: 'Dragão Brasil #214', hasExtra: true },
-    { number: 215, url: DB215, title: 'Dragão Brasil #215', hasExtra: true },
-    { number: 216, url: DB216, title: 'Dragão Brasil #216', hasExtra: true },
-    { number: 217, url: DB217, title: 'Dragão Brasil #217', hasExtra: true },
-    { number: 218, url: DB218, title: 'Dragão Brasil #218', hasExtra: true },
-    { number: 219, url: DB219, title: 'Dragão Brasil #219', hasExtra: true },
-    { number: 220, url: DB220, title: 'Dragão Brasil #220', hasExtra: true },
-    { number: 221, url: DB221, title: 'Dragão Brasil #221', hasExtra: true },
-    { number: 222, url: DB222, title: 'Dragão Brasil #222', hasExtra: true },
-    { number: 223, url: DB223, title: 'Dragão Brasil #223' },
-    { number: 224, url: DB224, title: 'Dragão Brasil #224' },
-    { number: 225, url: DB225, title: 'Dragão Brasil #225' },
-    { number: 226, url: DB226, title: 'Dragão Brasil #226' },
-    { number: 227, url: DB227, title: 'Dragão Brasil #227' }
-  ],
-  extras: [
-    { number: 210, url: DB210Extra, name: 'DB #210 - Extra' },
-    { number: 211, url: DB211Extra, name: 'DB #211 - Extra' },
-    { number: 212, url: DB212Extra, name: 'DB #212 - Extra' },
-    { number: 213, url: DB213Extra, name: 'DB #213 - Extra' },
-    { number: 214, url: DB214Extra, name: 'DB #214 - Extra' },
-    { number: 215, url: DB215Extra, name: 'DB #215 - Extra' },
-    { number: 216, url: DB216Extra, name: 'DB #216 - Extra' },
-    { number: 217, url: DB217Extra, name: 'DB #217 - Extra' },
-    { number: 218, url: DB218Extra, name: 'DB #218 - Extra' },
-    { number: 219, url: DB219Extra, name: 'DB #219 - Extra' },
-    { number: 220, url: DB220Extra, name: 'DB #220 - Extra' },
-    { number: 221, url: DB221Extra, name: 'DB #221 - Extra' },
-    { number: 222, url: DB222Extra, name: 'DB #222 - Extra' }
-  ]
-},
+    id: 'dragao_brasil',
+    title: 'Dragão Brasil',
+    subtitle: 'Coleção Especial',
+    description: 'A icônica revista de RPG brasileira. Cada edição traz aventuras, matérias especiais, novas regras e conteúdo exclusivo para diversos sistemas.',
+    icon: <GiDragonBreath size={48} />,
+    color: '#8B4513',
+    accentColor: '#CD5C5C',
+    category: 'Revistas',
+    type: 'magazine_collection',
+    editions: [
+      { number: 180, pdfKey: 'DB-180.pdf', title: 'Dragão Brasil #180' },
+      { number: 182, pdfKey: 'DB-182.pdf', title: 'Dragão Brasil #182' },
+      { number: 183, pdfKey: 'DB-183.pdf', title: 'Dragão Brasil #183' },
+      { number: 199, pdfKey: 'DB-199.pdf', title: 'Dragão Brasil #199' },
+      { number: 210, pdfKey: 'DB-210.pdf', title: 'Dragão Brasil #210', hasExtra: true },
+      { number: 211, pdfKey: 'DB-211.pdf', title: 'Dragão Brasil #211', hasExtra: true },
+      { number: 212, pdfKey: 'DB-212.pdf', title: 'Dragão Brasil #212', hasExtra: true },
+      { number: 213, pdfKey: 'DB-213.pdf', title: 'Dragão Brasil #213', hasExtra: true },
+      { number: 214, pdfKey: 'DB-214.pdf', title: 'Dragão Brasil #214', hasExtra: true },
+      { number: 215, pdfKey: 'DB-215.pdf', title: 'Dragão Brasil #215', hasExtra: true },
+      { number: 216, pdfKey: 'DB-216.pdf', title: 'Dragão Brasil #216', hasExtra: true },
+      { number: 217, pdfKey: 'DB-217.pdf', title: 'Dragão Brasil #217', hasExtra: true },
+      { number: 218, pdfKey: 'DB-218.pdf', title: 'Dragão Brasil #218', hasExtra: true },
+      { number: 219, pdfKey: 'DB-219.pdf', title: 'Dragão Brasil #219', hasExtra: true },
+      { number: 220, pdfKey: 'DB-220.pdf', title: 'Dragão Brasil #220', hasExtra: true },
+      { number: 221, pdfKey: 'DB-221.pdf', title: 'Dragão Brasil #221', hasExtra: true },
+      { number: 222, pdfKey: 'DB-222.pdf', title: 'Dragão Brasil #222', hasExtra: true },
+      { number: 223, pdfKey: 'DB-223.pdf', title: 'Dragão Brasil #223' },
+      { number: 224, pdfKey: 'DB-224.pdf', title: 'Dragão Brasil #224' },
+      { number: 225, pdfKey: 'DB-225.pdf', title: 'Dragão Brasil #225' },
+      { number: 226, pdfKey: 'DB-226.pdf', title: 'Dragão Brasil #226' },
+      { number: 227, pdfKey: 'DB-227.pdf', title: 'Dragão Brasil #227' }
+    ],
+    extras: [
+      { number: 210, pdfKey: 'DB-210-Extra.pdf', name: 'DB #210 - Extra' },
+      { number: 211, pdfKey: 'DB-211-Extra.pdf', name: 'DB #211 - Extra' },
+      { number: 212, pdfKey: 'DB-212-Extra.pdf', name: 'DB #212 - Extra' },
+      { number: 213, pdfKey: 'DB-213-Extra.pdf', name: 'DB #213 - Extra' },
+      { number: 214, pdfKey: 'DB-214-Extra.pdf', name: 'DB #214 - Extra' },
+      { number: 215, pdfKey: 'DB-215-Extra.pdf', name: 'DB #215 - Extra' },
+      { number: 216, pdfKey: 'DB-216-Extra.pdf', name: 'DB #216 - Extra' },
+      { number: 217, pdfKey: 'DB-217-Extra.pdf', name: 'DB #217 - Extra' },
+      { number: 218, pdfKey: 'DB-218-Extra.pdf', name: 'DB #218 - Extra' },
+      { number: 219, pdfKey: 'DB-219-Extra.pdf', name: 'DB #219 - Extra' },
+      { number: 220, pdfKey: 'DB-220-Extra.pdf', name: 'DB #220 - Extra' },
+      { number: 221, pdfKey: 'DB-221-Extra.pdf', name: 'DB #221 - Extra' },
+      { number: 222, pdfKey: 'DB-222-Extra.pdf', name: 'DB #222 - Extra' }
+    ]
+  },
   {
     id: 'rt20_duelo',
     title: 'Revista Tormenta 20 - Duelo de Dragões',
@@ -270,22 +260,22 @@ const magazineCollections = [
     category: 'Revistas',
     type: 'magazine_collection',
     editions: [
-      { number: 10, url: RT20_10, title: 'RT20 #10 - O Despertar' },
-      { number: 11, url: RT20_11, title: 'RT20 #11 - As Cinzas' },
-      { number: 12, url: RT20_12, title: 'RT20 #12 - O Voo' },
-      { number: 13, url: RT20_13, title: 'RT20 #13 - A Caçada' },
-      { number: 14, url: RT20_14, title: 'RT20 #14 - O Ninho' },
-      { number: 15, url: RT20_15, title: 'RT20 #15 - A Aliança' },
-      { number: 16, url: RT20_16, title: 'RT20 #16 - O Confronto' },
-      { number: 17, url: RT20_17, title: 'RT20 #17 - A Queda' },
-      { number: 18, url: RT20_18, title: 'RT20 #18 - O Legado' },
-      { number: 19, url: RT20_19, title: 'RT20 #19 - A Ascensão' },
-      { number: 20, url: RT20_20, title: 'RT20 #20 - O Desfecho' }
+      { number: 10, pdfKey: 'RT20-10.pdf', title: 'RT20 #10 - O Despertar' },
+      { number: 11, pdfKey: 'RT20-11.pdf', title: 'RT20 #11 - As Cinzas' },
+      { number: 12, pdfKey: 'RT20-12.pdf', title: 'RT20 #12 - O Voo' },
+      { number: 13, pdfKey: 'RT20-13.pdf', title: 'RT20 #13 - A Caçada' },
+      { number: 14, pdfKey: 'RT20-14.pdf', title: 'RT20 #14 - O Ninho' },
+      { number: 15, pdfKey: 'RT20-15.pdf', title: 'RT20 #15 - A Aliança' },
+      { number: 16, pdfKey: 'RT20-16.pdf', title: 'RT20 #16 - O Confronto' },
+      { number: 17, pdfKey: 'RT20-17.pdf', title: 'RT20 #17 - A Queda' },
+      { number: 18, pdfKey: 'RT20-18.pdf', title: 'RT20 #18 - O Legado' },
+      { number: 19, pdfKey: 'RT20-19.pdf', title: 'RT20 #19 - A Ascensão' },
+      { number: 20, pdfKey: 'RT20-20.pdf', title: 'RT20 #20 - O Desfecho' }
     ],
     extras: [
-      { name: 'Mapas do Arco', url: null },
-      { name: 'Fichas dos Dragões', url: null },
-      { name: 'Arte Conceitual', url: null }
+      { name: 'Mapas do Arco', pdfKey: null, placeholder: true },
+      { name: 'Fichas dos Dragões', pdfKey: null, placeholder: true },
+      { name: 'Arte Conceitual', pdfKey: null, placeholder: true }
     ]
   },
   {
@@ -299,18 +289,18 @@ const magazineCollections = [
     category: 'Revistas',
     type: 'magazine_collection',
     editions: [
-      { number: 21, url: RT20_21, title: 'RT20 #21 - O Presságio' },
-      { number: 22, url: RT20_22, title: 'RT20 #22 - A Profecia' },
-      { number: 23, url: RT20_23, title: 'RT20 #23 - O Escolhido' },
-      { number: 24, url: RT20_24, title: 'RT20 #24 - A Revelação' },
-      { number: 25, url: RT20_25, title: 'RT20 #25 - O Conflito' },
-      { number: 26, url: RT20_26, title: 'RT20 #26 - A Trégua' },
-      { number: 27, url: RT20_27, title: 'RT20 #27 - O Despertar Divino' }
+      { number: 21, pdfKey: 'RT20-21.pdf', title: 'RT20 #21 - O Presságio' },
+      { number: 22, pdfKey: 'RT20-22.pdf', title: 'RT20 #22 - A Profecia' },
+      { number: 23, pdfKey: 'RT20-23.pdf', title: 'RT20 #23 - O Escolhido' },
+      { number: 24, pdfKey: 'RT20-24.pdf', title: 'RT20 #24 - A Revelação' },
+      { number: 25, pdfKey: 'RT20-25.pdf', title: 'RT20 #25 - O Conflito' },
+      { number: 26, pdfKey: 'RT20-26.pdf', title: 'RT20 #26 - A Trégua' },
+      { number: 27, pdfKey: 'RT20-27.pdf', title: 'RT20 #27 - O Despertar Divino' }
     ],
     extras: [
-      { name: 'Mapas Celestiais', url: null },
-      { name: 'Fichas de Divindades', url: null },
-      { name: 'Guias de Campanha', url: null }
+      { name: 'Mapas Celestiais', pdfKey: null, placeholder: true },
+      { name: 'Fichas de Divindades', pdfKey: null, placeholder: true },
+      { name: 'Guias de Campanha', pdfKey: null, placeholder: true }
     ]
   }
 ]
@@ -319,12 +309,9 @@ const magazineCollections = [
 export default function Livro() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
-  const [viewerOpen, setViewerOpen] = useState(false)
-  const [currentPdf, setCurrentPdf] = useState(null)
-  const [currentBook, setCurrentBook] = useState(null)
   const [expandedMagazines, setExpandedMagazines] = useState({})
 
-  // Combinar livros e coleções de revistas para exibição
+  // Combinar livros e coleções
   const allItems = [...booksData, ...magazineCollections]
 
   // Filtro
@@ -338,57 +325,43 @@ export default function Livro() {
 
   const categories = ['all', ...new Set(allItems.map(item => item.category))]
 
-  const handleOpenPdf = (book, pdfUrl) => {
-    setCurrentBook(book)
-    setCurrentPdf(pdfUrl)
-    setViewerOpen(true)
+  // Função para obter URL do PDF
+  const getPdfUrl = (pdfKey) => {
+    return PDF_URLS[pdfKey] || null
   }
 
-  const handleDownload = (pdfUrl, fileName) => {
-    const link = document.createElement('a')
-    link.href = pdfUrl
-    link.download = fileName.replace(/\s/g, '_')
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
+  // Abrir PDF em nova aba
+  const handleOpenPdf = (item, pdfKey) => {
+    const url = getPdfUrl(pdfKey)
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } else {
+      alert('PDF não disponível no momento')
+    }
   }
 
-  const handleDownloadCollection = async (collection) => {
-    // Criar um arquivo ZIP com todas as edições e extras
-    //const JSZip = (await import('jszip')).default
-    //const zip = new JSZip()
-    
-    // Pasta para as edições
-    const editionsFolder = zip.folder(`${collection.title}/Edições`)
-    // Pasta para extras
-    const extrasFolder = zip.folder(`${collection.title}/Extras`)
-    
-    // Baixar cada edição
-    for (const edition of collection.editions) {
-      const response = await fetch(edition.url)
+  // Download do PDF
+  const handleDownload = async (pdfKey, fileName) => {
+    const url = getPdfUrl(pdfKey)
+    if (!url) {
+      alert('PDF não disponível para download')
+      return
+    }
+
+    try {
+      const response = await fetch(url)
       const blob = await response.blob()
-      editionsFolder.file(`${edition.title}.pdf`, blob)
+      const link = document.createElement('a')
+      link.href = URL.createObjectURL(blob)
+      link.download = fileName.replace(/\s/g, '_') + '.pdf'
+      document.body.appendChild(link)
+      link.click()
+      document.body.removeChild(link)
+      URL.revokeObjectURL(link.href)
+    } catch (error) {
+      console.error('Erro no download:', error)
+      alert('Erro ao baixar o arquivo. Tente novamente mais tarde.')
     }
-    
-    // Adicionar extras (se disponíveis)
-    for (const extra of collection.extras) {
-      if (extra.url) {
-        const response = await fetch(extra.url)
-        const blob = await response.blob()
-        extrasFolder.file(extra.name, blob)
-      } else {
-        // Adicionar arquivo placeholder
-        extrasFolder.file(`${extra.name}.txt`, "Conteúdo extra disponível em breve")
-      }
-    }
-    
-    // Gerar e baixar ZIP
-    const content = await zip.generateAsync({ type: "blob" })
-    const link = document.createElement('a')
-    link.href = URL.createObjectURL(content)
-    link.download = `${collection.title.replace(/\s/g, '_')}.zip`
-    link.click()
-    URL.revokeObjectURL(link.href)
   }
 
   const toggleMagazineExpand = (id) => {
@@ -469,7 +442,7 @@ export default function Livro() {
       <div className="livro__grid-section">
         <div className="container">
           <div className="livro__grid">
-            {filteredItems.map((item, index) => (
+            {filteredItems.map((item) => (
               item.type === 'magazine_collection' ? (
                 // Card para coleção de revista
                 <div 
@@ -505,7 +478,7 @@ export default function Livro() {
                       </span>
                     </div>
 
-                    {/* Botão para expandir/colapsar edições */}
+                    {/* Botão expandir */}
                     <button 
                       className="livro-card__expand-btn"
                       onClick={() => toggleMagazineExpand(item.id)}
@@ -517,7 +490,7 @@ export default function Livro() {
                       )}
                     </button>
 
-                    {/* Lista de edições (expandível) */}
+                    {/* Lista de edições */}
                     {expandedMagazines[item.id] && (
                       <div className="livro-card__editions-list">
                         <h4>Edições:</h4>
@@ -526,14 +499,14 @@ export default function Livro() {
                             <span>{edition.title}</span>
                             <button
                               className="livro-card__btn-small"
-                              onClick={() => handleOpenPdf(edition, edition.url)}
+                              onClick={() => handleOpenPdf(edition, edition.pdfKey)}
                             >
                               <FiExternalLink size={12} />
                               Visualizar
                             </button>
                             <button
                               className="livro-card__btn-small"
-                              onClick={() => handleDownload(edition.url, edition.title)}
+                              onClick={() => handleDownload(edition.pdfKey, edition.title)}
                             >
                               <FiDownload size={12} />
                               Baixar
@@ -548,24 +521,32 @@ export default function Livro() {
                               <div key={idx} className="livro-card__edition-item extra">
                                 <GiArchiveResearch size={12} />
                                 <span>{extra.name}</span>
-                                <span className="livro-card__extra-badge">Incluído no pacote</span>
+                                {extra.pdfKey ? (
+                                  <>
+                                    <button
+                                      className="livro-card__btn-small"
+                                      onClick={() => handleOpenPdf(extra, extra.pdfKey)}
+                                    >
+                                      <FiExternalLink size={12} />
+                                      Visualizar
+                                    </button>
+                                    <button
+                                      className="livro-card__btn-small"
+                                      onClick={() => handleDownload(extra.pdfKey, extra.name)}
+                                    >
+                                      <FiDownload size={12} />
+                                      Baixar
+                                    </button>
+                                  </>
+                                ) : (
+                                  <span className="livro-card__extra-badge">Em breve</span>
+                                )}
                               </div>
                             ))}
                           </>
                         )}
                       </div>
                     )}
-
-                    {/* Ações principais */}
-                    <div className="livro-card__actions">
-                      <button
-                        className="livro-card__btn livro-card__btn--download"
-                        onClick={() => handleDownloadCollection(item)}
-                      >
-                        <FiDownload size={14} />
-                        Baixar Coleção Completa
-                      </button>
-                    </div>
                   </div>
                 </div>
               ) : (
@@ -606,14 +587,14 @@ export default function Livro() {
                     <div className="livro-card__actions">
                       <button
                         className="livro-card__btn livro-card__btn--view"
-                        onClick={() => handleOpenPdf(item, item.pdfUrl)}
+                        onClick={() => handleOpenPdf(item, item.pdfKey)}
                       >
                         <FiExternalLink size={14} />
                         Visualizar
                       </button>
                       <button
                         className="livro-card__btn livro-card__btn--download"
-                        onClick={() => handleDownload(item.pdfUrl, item.title)}
+                        onClick={() => handleDownload(item.pdfKey, item.title)}
                       >
                         <FiDownload size={14} />
                         Baixar
@@ -649,38 +630,6 @@ export default function Livro() {
           </div>
         </div>
       </footer>
-
-      {/* Modal Viewer */}
-      {viewerOpen && currentPdf && (
-        <div className="livro__viewer-overlay" onClick={() => setViewerOpen(false)}>
-          <div className="livro__viewer" onClick={(e) => e.stopPropagation()}>
-            <div className="livro__viewer-header">
-              <h3>{currentBook?.title || 'Documento'}</h3>
-              <div className="livro__viewer-actions">
-                <button
-                  className="livro__viewer-download"
-                  onClick={() => handleDownload(currentPdf, currentBook?.title || 'documento')}
-                  title="Baixar PDF"
-                >
-                  <FiDownload size={18} />
-                </button>
-                <button
-                  className="livro__viewer-close"
-                  onClick={() => setViewerOpen(false)}
-                  title="Fechar"
-                >
-                  ✕
-                </button>
-              </div>
-            </div>
-            <iframe
-              src={`${currentPdf}#toolbar=0`}
-              title={currentBook?.title || 'PDF Viewer'}
-              className="livro__viewer-iframe"
-            />
-          </div>
-        </div>
-      )}
     </div>
   )
 }
