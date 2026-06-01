@@ -1,0 +1,324 @@
+/* ═══════════════════════════════════════════════
+   Home.css — Página inicial
+   ═══════════════════════════════════════════════ */
+
+/* ── WRAPPER ── */
+.home {
+  display: flex;
+  flex-direction: column;
+}
+
+/* ══════════════════════════════
+   HERO
+   ══════════════════════════════ */
+.hero {
+  position: relative;
+  min-height: calc(100vh - var(--nav-height));
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 5rem 2rem 4rem;
+  overflow: hidden;
+  text-align: center;
+}
+
+/* Grade ornamental de fundo */
+.hero__bg-grid {
+  position: absolute;
+  inset: 0;
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 56px,
+      rgba(139, 26, 26, 0.04) 56px,
+      rgba(139, 26, 26, 0.04) 57px
+    ),
+    repeating-linear-gradient(
+      90deg,
+      transparent,
+      transparent 56px,
+      rgba(139, 26, 26, 0.04) 56px,
+      rgba(139, 26, 26, 0.04) 57px
+    );
+  pointer-events: none;
+}
+
+/* Vinheta nas bordas */
+.hero__bg-vignette {
+  position: absolute;
+  inset: 0;
+  background: radial-gradient(
+    ellipse at center,
+    transparent 40%,
+    var(--clr-bg) 100%
+  );
+  pointer-events: none;
+}
+
+.hero__content {
+  position: relative;
+  z-index: 2;
+  max-width: 720px;
+  width: 100%;
+}
+
+/* Badge */
+.hero__badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--clr-red-dark);
+  color: #F0D4A0;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.22em;
+  text-transform: uppercase;
+  padding: 6px 18px;
+  margin-bottom: 1.75rem;
+  clip-path: polygon(12px 0%, 100% 0%, calc(100% - 12px) 100%, 0% 100%);
+}
+
+/* Título principal */
+.hero__title {
+  font-family: var(--font-display);
+  font-size: clamp(44px, 7vw, 72px);
+  font-weight: 700;
+  line-height: 1.05;
+  color: var(--clr-text);
+  letter-spacing: -0.01em;
+  margin-bottom: 0.25rem;
+}
+
+.hero__title-accent {
+  color: var(--clr-red-light);
+}
+
+/* Subtítulo em itálico */
+.hero__subtitle {
+  font-size: 20px;
+  font-style: italic;
+  color: var(--clr-text-muted);
+  margin: 0.5rem 0 1rem;
+}
+
+/* Descrição */
+.hero__desc {
+  font-size: 18px;
+  line-height: 1.75;
+  color: var(--clr-text-muted);
+  max-width: 580px;
+  margin: 0 auto 2.5rem;
+}
+
+.hero__desc strong {
+  color: var(--clr-red-light);
+  font-weight: 600;
+}
+
+/* Botões de ação */
+.hero__actions {
+  display: flex;
+  gap: 14px;
+  justify-content: center;
+  flex-wrap: wrap;
+}
+
+/* Hint de scroll */
+.hero__scroll-hint {
+  position: absolute;
+  bottom: 2rem;
+  left: 50%;
+  transform: translateX(-50%);
+  color: var(--clr-red);
+  opacity: 0.35;
+  font-size: 18px;
+  animation: bob 2.2s ease-in-out infinite;
+}
+
+/* ══════════════════════════════
+   FEATURES
+   ══════════════════════════════ */
+.features {
+  background: var(--clr-surface);
+  border-top: 1px solid var(--clr-border-light);
+  border-bottom: 1px solid var(--clr-border-light);
+  padding: 5rem 0;
+  position: relative;
+}
+
+/* Linha vermelha decorativa no topo da section */
+.features::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 120px;
+  height: 2px;
+  background: var(--clr-red);
+  opacity: 0.6;
+}
+
+.features__header {
+  text-align: center;
+  margin-bottom: 3rem;
+}
+
+.features__grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 1px;
+  background: var(--clr-border-light);
+  border: 1px solid var(--clr-border-light);
+}
+
+/* ── Card de feature ── */
+.feature-card {
+  position: relative;
+  background: var(--clr-surface);
+  padding: 2.25rem 1.75rem;
+  text-align: center;
+  transition: background var(--transition);
+  overflow: hidden;
+}
+
+.feature-card:hover {
+  background: var(--clr-bg);
+}
+
+/* Cantos decorativos */
+.feature-card__corner {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-color: var(--clr-gold);
+  border-style: solid;
+  opacity: 0.4;
+  transition: opacity var(--transition);
+}
+
+.feature-card:hover .feature-card__corner {
+  opacity: 0.8;
+}
+
+.feature-card__corner--tl {
+  top: 10px;
+  left: 10px;
+  border-width: 1px 0 0 1px;
+}
+
+.feature-card__corner--br {
+  bottom: 10px;
+  right: 10px;
+  border-width: 0 1px 1px 0;
+}
+
+.feature-card__icon {
+  color: var(--clr-red);
+  margin-bottom: 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: color var(--transition), transform var(--transition);
+}
+
+.feature-card:hover .feature-card__icon {
+  color: var(--clr-red-light);
+  transform: scale(1.08);
+}
+
+.feature-card__title {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--clr-text);
+  margin-bottom: 0.75rem;
+}
+
+.feature-card__desc {
+  font-size: 15px;
+  line-height: 1.65;
+  color: var(--clr-text-muted);
+  font-style: italic;
+}
+
+/* ══════════════════════════════
+   CTA FINAL
+   ══════════════════════════════ */
+.cta {
+  padding: 6rem 2rem;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.25rem;
+  position: relative;
+}
+
+.cta::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 1px;
+  height: 60px;
+  background: linear-gradient(to bottom, transparent, var(--clr-border));
+}
+
+.cta__ornament {
+  font-size: 13px;
+  color: var(--clr-gold);
+  letter-spacing: 0.4em;
+  opacity: 0.6;
+}
+
+.cta__title {
+  font-family: var(--font-display);
+  font-size: clamp(28px, 4vw, 42px);
+  font-weight: 700;
+  color: var(--clr-text);
+  letter-spacing: 0.02em;
+}
+
+.cta__desc {
+  font-size: 18px;
+  line-height: 1.7;
+  color: var(--clr-text-muted);
+  font-style: italic;
+  max-width: 420px;
+}
+
+.cta__runes {
+  margin-top: 1.5rem;
+  font-size: 14px;
+  letter-spacing: 0.6em;
+}
+
+/* ── RESPONSIVO ── */
+@media (max-width: 600px) {
+  .hero {
+    padding: 3rem 1.25rem 3rem;
+  }
+
+  .hero__desc {
+    font-size: 16px;
+  }
+
+  .features {
+    padding: 3rem 0;
+  }
+
+  .features__grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cta {
+    padding: 4rem 1.5rem;
+  }
+}
