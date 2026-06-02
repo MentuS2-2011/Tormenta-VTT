@@ -61,7 +61,7 @@ export default function Navbar({ user = null, onLogout }) {
         <Link to="/" className="navbar__logo" aria-label="Torment VTT">
           <NavEmblem />
           <div className="navbar__logo-text">
-            <span className="navbar__logo-title">Torment VTT</span>
+            <span className="navbar__logo-title">Tormenta VTT</span>
             <span className="navbar__logo-sub">Mesa Virtual para T20</span>
           </div>
         </Link>

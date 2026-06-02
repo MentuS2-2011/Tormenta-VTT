@@ -1,6 +1,11 @@
+<<<<<<< HEAD
 // Livro.jsx - Versão com PDFs no Netlify
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+=======
+// Livro.jsx - Versão completa com todos os livros e revistas
+import { useState } from 'react'
+>>>>>>> 13a6d02 (commit de segurança)
 import { 
   GiBookCover, 
   GiScrollUnfurled, 
@@ -12,13 +17,13 @@ import {
   GiMagnifyingGlass,
   GiHolySymbol,
   GiCrown,
-  GiNewspaper,
-  GiArchiveResearch,
-  GiDragonBreath
+  GiDragonBreath,
+  GiCharacter
 } from 'react-icons/gi'
 import { FiDownload, FiBookOpen, FiExternalLink, FiFolder, FiFile, FiChevronDown, FiChevronUp } from 'react-icons/fi'
 import './Livro.css'
 
+<<<<<<< HEAD
 // ═══════════════════════════════════════════════
 // URLs dos PDFs no Netlify
 // ═══════════════════════════════════════════════
@@ -28,12 +33,21 @@ const NETLIFY_BASE_URL = 'https://livrostormenta20.netlify.app'
 
 // Mapeamento dos PDFs com URLs completas
 const PDF_URLS = {
+=======
+// URLs diretas dos PDFs no Netlify
+const PDF_URLS = {
+  // Livros
+>>>>>>> 13a6d02 (commit de segurança)
   'Livro-Basico.pdf': 'https://livrostormenta20.netlify.app/Livros/Livro-B%C3%A1sico.pdf',
   'Ameacas-de-Arton.pdf': 'https://livrostormenta20.netlify.app/Livros/Amea%C3%A7as-de-Arton.pdf',
   'Herois-de-Arton.pdf': 'https://livrostormenta20.netlify.app/Livros/Her%C3%B3is-de-Arton.pdf',
   'Atlas-de-Arton.pdf': 'https://livrostormenta20.netlify.app/Livros/Atlas-de-Arton.pdf',
   'Deuses-de-Arton.pdf': 'https://livrostormenta20.netlify.app/Livros/Deuses-de-Arton.pdf',
   'Guia-de-Deuses-Menores.pdf': 'https://livrostormenta20.netlify.app/Livros/Guia-de-Deuses-Menores.pdf',
+<<<<<<< HEAD
+=======
+  'Guia-de-NPCs.pdf': 'https://livrostormenta20.netlify.app/Livros/Guia-de-NPCs.pdf',
+>>>>>>> 13a6d02 (commit de segurança)
   'distincoes-para-chelias.pdf': 'https://livrostormenta20.netlify.app/Livros/distincoes-para-chelias.pdf',
   
   // Dragão Brasil
@@ -41,6 +55,12 @@ const PDF_URLS = {
   'DB-182.pdf': 'https://livrostormenta20.netlify.app/DB/DB-182.pdf',
   'DB-183.pdf': 'https://livrostormenta20.netlify.app/DB/DB-183.pdf',
   'DB-199.pdf': 'https://livrostormenta20.netlify.app/DB/DB-199.pdf',
+<<<<<<< HEAD
+=======
+  'DB-207.pdf': 'https://livrostormenta20.netlify.app/DB/DB-207.pdf',
+  'DB-208.pdf': 'https://livrostormenta20.netlify.app/DB/DB-208.pdf',
+  'DB-209.pdf': 'https://livrostormenta20.netlify.app/DB/DB-209.pdf',
+>>>>>>> 13a6d02 (commit de segurança)
   'DB-210.pdf': 'https://livrostormenta20.netlify.app/DB/DB-210.pdf',
   'DB-210-Extra.pdf': 'https://livrostormenta20.netlify.app/Extra_DB/DB_210-Extra.pdf',
   'DB-211.pdf': 'https://livrostormenta20.netlify.app/DB/DB-211.pdf',
@@ -73,7 +93,14 @@ const PDF_URLS = {
   'DB-226.pdf': 'https://livrostormenta20.netlify.app/DB/DB-226.pdf',
   'DB-227.pdf': 'https://livrostormenta20.netlify.app/DB/DB-227.pdf',
   
+<<<<<<< HEAD
   // RT Duelo de Dragões
+=======
+  // RT Duelo de Dragões (edições 7 a 20)
+  'RT20-7.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-7.pdf',
+  'RT20-8.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-8.pdf',
+  'RT20-9.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-9.pdf',
+>>>>>>> 13a6d02 (commit de segurança)
   'RT20-10.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-10.pdf',
   'RT20-11.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-11.pdf',
   'RT20-12.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-12.pdf',
@@ -86,7 +113,11 @@ const PDF_URLS = {
   'RT20-19.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-19.pdf',
   'RT20-20.pdf': 'https://livrostormenta20.netlify.app/RT/DuelodeDragoes(completo)/RT20-20.pdf',
   
+<<<<<<< HEAD
   // RT Fulgor dos Deuses
+=======
+  // RT Fulgor dos Deuses (edições 21 a 27)
+>>>>>>> 13a6d02 (commit de segurança)
   'RT20-21.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-21.pdf',
   'RT20-22.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-22.pdf',
   'RT20-23.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-23.pdf',
@@ -95,13 +126,22 @@ const PDF_URLS = {
   'RT20-26.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-26.pdf',
   'RT20-27.pdf': 'https://livrostormenta20.netlify.app/RT/FullgordosDeuses/RT20-27.pdf',
 }
+<<<<<<< HEAD
 // Dados dos livros oficiais
+=======
+
+// Dados dos livros (incluindo o Guia de NPCs)
+>>>>>>> 13a6d02 (commit de segurança)
 const booksData = [
   {
     id: 'basico',
     title: 'Livro Básico',
     subtitle: 'Tormenta 20',
+<<<<<<< HEAD
     description: 'O livro fundamental do sistema Tormenta 20. Contém todas as regras essenciais, classes, raças, magias e equipamentos para suas aventuras em Arton.',
+=======
+    description: 'O livro fundamental do sistema Tormenta 20. Contém todas as regras essenciais, classes, raças, magias e equipamentos.',
+>>>>>>> 13a6d02 (commit de segurança)
     pdfKey: 'Livro-Basico.pdf',
     icon: <GiSpellBook size={48} />,
     color: '#8B1A1A',
@@ -115,7 +155,11 @@ const booksData = [
     id: 'ameacas',
     title: 'Ameaças de Arton',
     subtitle: 'O Melhorário',
+<<<<<<< HEAD
     description: 'Mais de 300 ameaças para desafiar os heróis! De monstros clássicos a criaturas lendárias, este livro expande o bestiário de Tormenta 20 com perigos inesquecíveis.',
+=======
+    description: 'Mais de 300 ameaças para desafiar os heróis! De monstros clássicos a criaturas lendárias.',
+>>>>>>> 13a6d02 (commit de segurança)
     pdfKey: 'Ameacas-de-Arton.pdf',
     icon: <GiCrownedSkull size={48} />,
     color: '#2D4A3E',
@@ -129,7 +173,11 @@ const booksData = [
     id: 'herois',
     title: 'Heróis de Arton',
     subtitle: 'Guia do Aventureiro',
+<<<<<<< HEAD
     description: 'Expanda as possibilidades dos seus personagens! Novos poderes, origens, distinções e um sistema de reputação para heróis que buscam a glória.',
+=======
+    description: 'Expanda as possibilidades dos seus personagens! Novos poderes, origens, distinções e sistema de reputação.',
+>>>>>>> 13a6d02 (commit de segurança)
     pdfKey: 'Herois-de-Arton.pdf',
     icon: <GiAchievement size={48} />,
     color: '#4A6B3A',
@@ -143,7 +191,11 @@ const booksData = [
     id: 'atlas',
     title: 'Atlas de Arton',
     subtitle: 'O Mundo dos Deuses',
+<<<<<<< HEAD
     description: 'Explore o continente de Arton em detalhes! Descubra as nações, reinos, pontos de interesse e a rica história que faz deste mundo um cenário único.',
+=======
+    description: 'Explore o continente de Arton em detalhes! Nações, reinos, pontos de interesse e história.',
+>>>>>>> 13a6d02 (commit de segurança)
     pdfKey: 'Atlas-de-Arton.pdf',
     icon: <GiWorld size={48} />,
     color: '#3A4A6B',
@@ -157,7 +209,11 @@ const booksData = [
     id: 'deuses',
     title: 'Deuses de Arton',
     subtitle: 'O Panteão Divino',
+<<<<<<< HEAD
     description: 'Conheça os vinte deuses maiores e menores de Arton! Seus domínios, poderes concedidos, devotos e a influência divina no mundo.',
+=======
+    description: 'Conheça os vinte deuses maiores e menores de Arton! Domínios, poderes concedidos e mitologia.',
+>>>>>>> 13a6d02 (commit de segurança)
     pdfKey: 'Deuses-de-Arton.pdf',
     icon: <GiHolySymbol size={48} />,
     color: '#6B3A4A',
@@ -171,7 +227,11 @@ const booksData = [
     id: 'deuses_menores',
     title: 'Guia de Deuses Menores',
     subtitle: 'Poderes Esquecidos',
+<<<<<<< HEAD
     description: 'Explore os deuses menores de Arton, entidades de poder limitado mas grande influência. Novos poderes, domínios e caminhos divinos para seus personagens.',
+=======
+    description: 'Explore os deuses menores de Arton, entidades de poder limitado mas grande influência.',
+>>>>>>> 13a6d02 (commit de segurança)
     pdfKey: 'Guia-de-Deuses-Menores.pdf',
     icon: <GiHolySymbol size={48} />,
     color: '#7B5A3A',
@@ -182,10 +242,28 @@ const booksData = [
     type: 'book'
   },
   {
+    id: 'guia_npcs',
+    title: 'Guia de NPCs',
+    subtitle: 'Personagens e Aliados',
+    description: 'Um guia completo para criação e interpretação de NPCs em Tormenta 20. Fichas prontas, arquétipos e dicas para mestres.',
+    pdfKey: 'Guia-de-NPCs.pdf',
+    icon: <GiCharacter size={48} />,
+    color: '#3A5A6B',
+    accentColor: '#5A7A8B',
+    category: 'Apoio',
+    pages: 96,
+    year: 2023,
+    type: 'book'
+  },
+  {
     id: 'distincoes',
-    title: 'Distinções para Chélias',
+    title: 'Distinções para Tormenta',
     subtitle: 'Honra e Glória',
+<<<<<<< HEAD
     description: 'Explore as distinções únicas do reino de Chélias! Ordens de cavalaria, títulos nobiliárquicos e caminhos de prestígio.',
+=======
+    description: 'Explore as distinções! Ordens de cavalaria, títulos e caminhos de prestígio.',
+>>>>>>> 13a6d02 (commit de segurança)
     pdfKey: 'distincoes-para-chelias.pdf',
     icon: <GiCrown size={48} />,
     color: '#4A3A6B',
@@ -197,13 +275,17 @@ const booksData = [
   }
 ]
 
-// Dados das coleções de revistas
+// Coleções de revistas (com todas as edições)
 const magazineCollections = [
   {
     id: 'dragao_brasil',
     title: 'Dragão Brasil',
     subtitle: 'Coleção Especial',
+<<<<<<< HEAD
     description: 'A icônica revista de RPG brasileira. Cada edição traz aventuras, matérias especiais, novas regras e conteúdo exclusivo para diversos sistemas.',
+=======
+    description: 'A icônica revista de RPG brasileira. Cada edição traz aventuras, matérias especiais, novas regras e conteúdo exclusivo.',
+>>>>>>> 13a6d02 (commit de segurança)
     icon: <GiDragonBreath size={48} />,
     color: '#8B4513',
     accentColor: '#CD5C5C',
@@ -214,6 +296,12 @@ const magazineCollections = [
       { number: 182, pdfKey: 'DB-182.pdf', title: 'Dragão Brasil #182' },
       { number: 183, pdfKey: 'DB-183.pdf', title: 'Dragão Brasil #183' },
       { number: 199, pdfKey: 'DB-199.pdf', title: 'Dragão Brasil #199' },
+<<<<<<< HEAD
+=======
+      { number: 207, pdfKey: 'DB-207.pdf', title: 'Dragão Brasil #207' },
+      { number: 208, pdfKey: 'DB-208.pdf', title: 'Dragão Brasil #208' },
+      { number: 209, pdfKey: 'DB-209.pdf', title: 'Dragão Brasil #209' },
+>>>>>>> 13a6d02 (commit de segurança)
       { number: 210, pdfKey: 'DB-210.pdf', title: 'Dragão Brasil #210', hasExtra: true },
       { number: 211, pdfKey: 'DB-211.pdf', title: 'Dragão Brasil #211', hasExtra: true },
       { number: 212, pdfKey: 'DB-212.pdf', title: 'Dragão Brasil #212', hasExtra: true },
@@ -232,6 +320,7 @@ const magazineCollections = [
       { number: 225, pdfKey: 'DB-225.pdf', title: 'Dragão Brasil #225' },
       { number: 226, pdfKey: 'DB-226.pdf', title: 'Dragão Brasil #226' },
       { number: 227, pdfKey: 'DB-227.pdf', title: 'Dragão Brasil #227' }
+<<<<<<< HEAD
     ],
     extras: [
       { number: 210, pdfKey: 'DB-210-Extra.pdf', name: 'DB #210 - Extra' },
@@ -247,19 +336,27 @@ const magazineCollections = [
       { number: 220, pdfKey: 'DB-220-Extra.pdf', name: 'DB #220 - Extra' },
       { number: 221, pdfKey: 'DB-221-Extra.pdf', name: 'DB #221 - Extra' },
       { number: 222, pdfKey: 'DB-222-Extra.pdf', name: 'DB #222 - Extra' }
+=======
+>>>>>>> 13a6d02 (commit de segurança)
     ]
   },
   {
     id: 'rt20_duelo',
     title: 'Revista Tormenta 20 - Duelo de Dragões',
     subtitle: 'Arco Completo',
-    description: 'A saga Duelo de Dragões! Uma aventura épica que leva os heróis a enfrentarem as dragões-reis de Arton. Edições 10 a 20.',
+    description: 'A saga Duelo de Dragões! Uma aventura épica que leva os heróis a enfrentarem as dragões-reis de Arton. Edições 7 a 20.',
     icon: <GiDragonHead size={48} />,
     color: '#2C1810',
     accentColor: '#8B0000',
     category: 'Revistas',
     type: 'magazine_collection',
     editions: [
+<<<<<<< HEAD
+=======
+      { number: 7, pdfKey: 'RT20-7.pdf', title: 'RT20 #7 - O Presságio' },
+      { number: 8, pdfKey: 'RT20-8.pdf', title: 'RT20 #8 - A Cinza' },
+      { number: 9, pdfKey: 'RT20-9.pdf', title: 'RT20 #9 - O Voo da Fênix' },
+>>>>>>> 13a6d02 (commit de segurança)
       { number: 10, pdfKey: 'RT20-10.pdf', title: 'RT20 #10 - O Despertar' },
       { number: 11, pdfKey: 'RT20-11.pdf', title: 'RT20 #11 - As Cinzas' },
       { number: 12, pdfKey: 'RT20-12.pdf', title: 'RT20 #12 - O Voo' },
@@ -271,11 +368,14 @@ const magazineCollections = [
       { number: 18, pdfKey: 'RT20-18.pdf', title: 'RT20 #18 - O Legado' },
       { number: 19, pdfKey: 'RT20-19.pdf', title: 'RT20 #19 - A Ascensão' },
       { number: 20, pdfKey: 'RT20-20.pdf', title: 'RT20 #20 - O Desfecho' }
+<<<<<<< HEAD
     ],
     extras: [
       { name: 'Mapas do Arco', pdfKey: null, placeholder: true },
       { name: 'Fichas dos Dragões', pdfKey: null, placeholder: true },
       { name: 'Arte Conceitual', pdfKey: null, placeholder: true }
+=======
+>>>>>>> 13a6d02 (commit de segurança)
     ]
   },
   {
@@ -296,25 +396,29 @@ const magazineCollections = [
       { number: 25, pdfKey: 'RT20-25.pdf', title: 'RT20 #25 - O Conflito' },
       { number: 26, pdfKey: 'RT20-26.pdf', title: 'RT20 #26 - A Trégua' },
       { number: 27, pdfKey: 'RT20-27.pdf', title: 'RT20 #27 - O Despertar Divino' }
+<<<<<<< HEAD
     ],
     extras: [
       { name: 'Mapas Celestiais', pdfKey: null, placeholder: true },
       { name: 'Fichas de Divindades', pdfKey: null, placeholder: true },
       { name: 'Guias de Campanha', pdfKey: null, placeholder: true }
+=======
+>>>>>>> 13a6d02 (commit de segurança)
     ]
   }
 ]
 
-// Componente principal
 export default function Livro() {
   const [searchTerm, setSearchTerm] = useState('')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [expandedMagazines, setExpandedMagazines] = useState({})
 
+<<<<<<< HEAD
   // Combinar livros e coleções
+=======
+>>>>>>> 13a6d02 (commit de segurança)
   const allItems = [...booksData, ...magazineCollections]
 
-  // Filtro
   const filteredItems = allItems.filter(item => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           item.subtitle.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -325,6 +429,7 @@ export default function Livro() {
 
   const categories = ['all', ...new Set(allItems.map(item => item.category))]
 
+<<<<<<< HEAD
   // Função para obter URL do PDF
   const getPdfUrl = (pdfKey) => {
     return PDF_URLS[pdfKey] || null
@@ -348,6 +453,24 @@ export default function Livro() {
       return
     }
 
+=======
+  const handleOpenPdf = (pdfKey) => {
+    const url = PDF_URLS[pdfKey]
+    if (url) {
+      window.open(url, '_blank', 'noopener,noreferrer')
+    } else {
+      alert('PDF não encontrado: ' + pdfKey)
+    }
+  }
+
+  const handleDownload = async (pdfKey, fileName) => {
+    const url = PDF_URLS[pdfKey]
+    if (!url) {
+      alert('PDF não encontrado')
+      return
+    }
+
+>>>>>>> 13a6d02 (commit de segurança)
     try {
       const response = await fetch(url)
       const blob = await response.blob()
@@ -359,8 +482,14 @@ export default function Livro() {
       document.body.removeChild(link)
       URL.revokeObjectURL(link.href)
     } catch (error) {
+<<<<<<< HEAD
       console.error('Erro no download:', error)
       alert('Erro ao baixar o arquivo. Tente novamente mais tarde.')
+=======
+      console.error('Erro:', error)
+      alert('Erro ao baixar. Tente abrir o PDF em nova aba e salvar manualmente.')
+      window.open(url, '_blank')
+>>>>>>> 13a6d02 (commit de segurança)
     }
   }
 
@@ -373,32 +502,25 @@ export default function Livro() {
 
   return (
     <div className="livro">
-      {/* Header Hero */}
+      {/* Hero Section */}
       <section className="livro__hero">
         <div className="livro__hero-bg" />
         <div className="livro__hero-content">
           <div className="livro__hero-badge">
-            <GiBookCover size={14} aria-hidden="true" />
+            <GiBookCover size={14} />
             Biblioteca de Arton
-            <GiBookCover size={14} aria-hidden="true" />
+            <GiBookCover size={14} />
           </div>
           <h1 className="livro__hero-title">
             Acervo de <span className="livro__hero-accent">Tormenta</span>
           </h1>
-          <div className="livro__hero-divider">
-            <span className="livro__hero-diamond" />
-            <span className="livro__hero-diamond" />
-            <span className="livro__hero-diamond" />
-          </div>
           <p className="livro__hero-desc">
             Livros oficiais e coleções completas de revistas
-            <br />
-            Consulte, estude e prepare suas aventuras
           </p>
         </div>
       </section>
 
-      {/* Barra de Filtros */}
+      {/* Filtros */}
       <div className="livro__filters">
         <div className="container">
           <div className="livro__filters-inner">
@@ -412,12 +534,11 @@ export default function Livro() {
                 className="livro__search-input"
               />
             </div>
-
             <div className="livro__categories">
               {categories.map(cat => (
                 <button
                   key={cat}
-                  className={`livro__category-btn ${selectedCategory === cat ? 'livro__category-btn--active' : ''}`}
+                  className={`livro__category-btn ${selectedCategory === cat ? 'active' : ''}`}
                   onClick={() => setSelectedCategory(cat)}
                 >
                   {cat === 'all' ? 'Todos' : cat}
@@ -428,37 +549,16 @@ export default function Livro() {
         </div>
       </div>
 
-      {/* Contador */}
-      <div className="livro__count">
-        <div className="container">
-          <p className="livro__count-text">
-            <span className="livro__count-number">{filteredItems.length}</span> 
-            {filteredItems.length === 1 ? ' item encontrado' : ' itens encontrados'}
-          </p>
-        </div>
-      </div>
-
-      {/* Grid de Itens */}
+      {/* Grid */}
       <div className="livro__grid-section">
         <div className="container">
           <div className="livro__grid">
             {filteredItems.map((item) => (
               item.type === 'magazine_collection' ? (
-                // Card para coleção de revista
-                <div 
-                  key={item.id} 
-                  className={`livro-card magazine-collection ${expandedMagazines[item.id] ? 'expanded' : ''}`}
-                  style={{ '--book-accent': item.accentColor, '--book-color': item.color }}
-                >
-                  <div className="livro-card__corner livro-card__corner--tl" />
-                  <div className="livro-card__corner livro-card__corner--tr" />
-                  <div className="livro-card__corner livro-card__corner--bl" />
-                  <div className="livro-card__corner livro-card__corner--br" />
-
+                <div key={item.id} className="livro-card magazine-collection">
                   <div className="livro-card__icon" style={{ color: item.accentColor }}>
                     {item.icon}
                   </div>
-
                   <div className="livro-card__content">
                     <span className="livro-card__category" style={{ background: item.color }}>
                       {item.category}
@@ -466,6 +566,7 @@ export default function Livro() {
                     <h3 className="livro-card__title">{item.title}</h3>
                     <p className="livro-card__subtitle">{item.subtitle}</p>
                     <p className="livro-card__desc">{item.description}</p>
+<<<<<<< HEAD
 
                     <div className="livro-card__meta">
                       <span className="livro-card__meta-item">
@@ -479,24 +580,26 @@ export default function Livro() {
                     </div>
 
                     {/* Botão expandir */}
+=======
+                    
+>>>>>>> 13a6d02 (commit de segurança)
                     <button 
                       className="livro-card__expand-btn"
                       onClick={() => toggleMagazineExpand(item.id)}
                     >
-                      {expandedMagazines[item.id] ? (
-                        <>Esconder Edições <FiChevronUp /></>
-                      ) : (
-                        <>Ver Edições <FiChevronDown /></>
-                      )}
+                      {expandedMagazines[item.id] ? '▲ Esconder Edições' : '▼ Ver Edições'}
                     </button>
 
+<<<<<<< HEAD
                     {/* Lista de edições */}
+=======
+>>>>>>> 13a6d02 (commit de segurança)
                     {expandedMagazines[item.id] && (
                       <div className="livro-card__editions-list">
-                        <h4>Edições:</h4>
                         {item.editions.map(edition => (
                           <div key={edition.number} className="livro-card__edition-item">
                             <span>{edition.title}</span>
+<<<<<<< HEAD
                             <button
                               className="livro-card__btn-small"
                               onClick={() => handleOpenPdf(edition, edition.pdfKey)}
@@ -509,10 +612,17 @@ export default function Livro() {
                               onClick={() => handleDownload(edition.pdfKey, edition.title)}
                             >
                               <FiDownload size={12} />
+=======
+                            <button onClick={() => handleOpenPdf(edition.pdfKey)}>
+                              Ver
+                            </button>
+                            <button onClick={() => handleDownload(edition.pdfKey, edition.title)}>
+>>>>>>> 13a6d02 (commit de segurança)
                               Baixar
                             </button>
                           </div>
                         ))}
+<<<<<<< HEAD
                         
                         {item.extras.length > 0 && (
                           <>
@@ -545,26 +655,17 @@ export default function Livro() {
                             ))}
                           </>
                         )}
+=======
+>>>>>>> 13a6d02 (commit de segurança)
                       </div>
                     )}
                   </div>
                 </div>
               ) : (
-                // Card para livro individual
-                <div 
-                  key={item.id} 
-                  className="livro-card"
-                  style={{ '--book-accent': item.accentColor, '--book-color': item.color }}
-                >
-                  <div className="livro-card__corner livro-card__corner--tl" />
-                  <div className="livro-card__corner livro-card__corner--tr" />
-                  <div className="livro-card__corner livro-card__corner--bl" />
-                  <div className="livro-card__corner livro-card__corner--br" />
-
+                <div key={item.id} className="livro-card">
                   <div className="livro-card__icon" style={{ color: item.accentColor }}>
                     {item.icon}
                   </div>
-
                   <div className="livro-card__content">
                     <span className="livro-card__category" style={{ background: item.color }}>
                       {item.category}
@@ -572,19 +673,8 @@ export default function Livro() {
                     <h3 className="livro-card__title">{item.title}</h3>
                     <p className="livro-card__subtitle">{item.subtitle}</p>
                     <p className="livro-card__desc">{item.description}</p>
-
-                    <div className="livro-card__meta">
-                      <span className="livro-card__meta-item">
-                        <FiBookOpen size={12} />
-                        {item.pages} páginas
-                      </span>
-                      <span className="livro-card__meta-item">
-                        <GiDragonHead size={12} />
-                        {item.year}
-                      </span>
-                    </div>
-
                     <div className="livro-card__actions">
+<<<<<<< HEAD
                       <button
                         className="livro-card__btn livro-card__btn--view"
                         onClick={() => handleOpenPdf(item, item.pdfKey)}
@@ -597,6 +687,12 @@ export default function Livro() {
                         onClick={() => handleDownload(item.pdfKey, item.title)}
                       >
                         <FiDownload size={14} />
+=======
+                      <button onClick={() => handleOpenPdf(item.pdfKey)}>
+                        Visualizar
+                      </button>
+                      <button onClick={() => handleDownload(item.pdfKey, item.title)}>
+>>>>>>> 13a6d02 (commit de segurança)
                         Baixar
                       </button>
                     </div>
@@ -605,15 +701,9 @@ export default function Livro() {
               )
             ))}
           </div>
-
-          {filteredItems.length === 0 && (
-            <div className="livro__empty">
-              <GiScrollUnfurled size={48} />
-              <p>Nenhum item encontrado com esses filtros.</p>
-            </div>
-          )}
         </div>
       </div>
+<<<<<<< HEAD
 
       {/* Footer */}
       <footer className="livro__footer">
@@ -630,6 +720,8 @@ export default function Livro() {
           </div>
         </div>
       </footer>
+=======
+>>>>>>> 13a6d02 (commit de segurança)
     </div>
   )
 }
