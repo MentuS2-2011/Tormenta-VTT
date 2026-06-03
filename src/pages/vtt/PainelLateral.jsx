@@ -46,15 +46,11 @@ export default function PainelLateral({
       .eq('mesa_id', mesaId)
       .order('created_at', { ascending: true })
       .limit(100)
-
     if (data) setMensagens(data)
   }
 
   function subscreverChat() {
-    if (window.chatChannel) {
-      supabase.removeChannel(window.chatChannel)
-    }
-
+    if (window.chatChannel) supabase.removeChannel(window.chatChannel)
     window.chatChannel = supabase
       .channel(`chat-${mesaId}`)
       .on('postgres_changes', {
@@ -68,10 +64,7 @@ export default function PainelLateral({
           .select('*, profiles:usuario_id(username, avatar_url)')
           .eq('id', payload.new.id)
           .single()
-        
-        if (msgWithProfile) {
-          setMensagens(prev => [...prev, msgWithProfile])
-        }
+        if (msgWithProfile) setMensagens(prev => [...prev, msgWithProfile])
       })
       .subscribe()
   }
@@ -81,7 +74,6 @@ export default function PainelLateral({
       .from('mesa_membros')
       .select('papel, profile:profiles(id, username, avatar_url)')
       .eq('mesa_id', mesaId)
-
     if (data) setJogadores(data)
   }
 
@@ -91,32 +83,54 @@ export default function PainelLateral({
       .select('*')
       .eq('mesa_id', mesaId)
       .order('favorito', { ascending: false })
-
     if (data) setMapas(data)
   }
 
   async function enviarMensagem(e) {
     e.preventDefault()
     if (!novaMsg.trim()) return
-
-    const { error } = await supabase
-      .from('chat_messages')
-      .insert({
-        mesa_id: mesaId,
-        usuario_id: profile.id,
-        conteudo: novaMsg.trim(),
-        tipo: 'normal'
-      })
-
-    if (!error) setNovaMsg('')
+    await supabase.from('chat_messages').insert({
+      mesa_id: mesaId,
+      usuario_id: profile.id,
+      conteudo: novaMsg.trim(),
+      tipo: 'normal'
+    })
+    setNovaMsg('')
   }
 
   if (!aberto) return null
 
-  const renderConteudo = () => {
-    switch (abaAtiva) {
-      case 'chat':
-        return (
+  // Botões de abas dentro do painel (quando aberto)
+  const abas = [
+    { id: 'chat', icone: <FiMessageSquare size={16} />, nome: '' },
+    { id: 'jogadores', icone: <FiUsers size={16} />, nome: '' },
+    { id: 'mapas', icone: <FiMap size={16} />, nome: '' },
+    { id: 'resumo', icone: <FiFileText size={16} />, nome: '' },
+    { id: 'regras', icone: <FiBookOpen size={16} />, nome: '' },
+    { id: 'pastas', icone: <FiFolder size={16} />, nome: '' },
+    { id: 'musica', icone: <FiMusic size={16} />, nome: '' },
+  ]
+
+  return (
+    <aside className="painel-lateral">
+      {/* Abas dentro do painel */}
+      <div className="painel-lateral__tabs">
+        {abas.map(aba => (
+          <button
+            key={aba.id}
+            className={`painel-tab ${abaAtiva === aba.id ? 'active' : ''}`}
+            onClick={() => setAbaAtiva(aba.id)}
+            title={aba.nome}
+          >
+            {aba.icone}
+            <span>{aba.nome}</span>
+          </button>
+        ))}
+      </div>
+
+      {/* Conteúdo da aba ativa */}
+      <div className="painel-lateral__content">
+        {abaAtiva === 'chat' && (
           <div className="painel-chat">
             <div className="painel-chat__messages">
               {mensagens.map(msg => (
@@ -125,19 +139,13 @@ export default function PainelLateral({
                     {msg.profiles?.avatar_url ? (
                       <img src={msg.profiles.avatar_url} alt="" />
                     ) : (
-                      <div className="avatar-placeholder">
-                        <FiUser size={14} />
-                      </div>
+                      <div className="avatar-placeholder"><FiUser size={14} /></div>
                     )}
                   </div>
                   <div className="chat-mensagem__content">
                     <div className="chat-mensagem__header">
-                      <span className="chat-mensagem__autor">
-                        {msg.profiles?.username || 'Usuário'}
-                      </span>
-                      <span className="chat-mensagem__hora">
-                        {new Date(msg.created_at).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                      </span>
+                      <span className="chat-mensagem__autor">{msg.profiles?.username || 'Usuário'}</span>
+                      <span className="chat-mensagem__hora">{new Date(msg.created_at).toLocaleTimeString([], { hour:'2-digit', minute:'2-digit' })}</span>
                     </div>
                     <p className="chat-mensagem__texto">{msg.conteudo}</p>
                   </div>
@@ -152,41 +160,22 @@ export default function PainelLateral({
               )}
             </div>
             <form className="painel-chat__form" onSubmit={enviarMensagem}>
-              <input
-                type="text"
-                placeholder="Digite sua mensagem..."
-                value={novaMsg}
-                onChange={e => setNovaMsg(e.target.value)}
-                maxLength={500}
-              />
-              <button type="submit">
-                <FiSend size={16} />
-              </button>
+              <input type="text" placeholder="Digite sua mensagem..." value={novaMsg} onChange={e => setNovaMsg(e.target.value)} maxLength={500} />
+              <button type="submit"><FiSend size={16} /></button>
             </form>
           </div>
-        )
-
-      case 'jogadores':
-        return (
+        )}
+        {abaAtiva === 'jogadores' && (
           <div className="painel-jogadores">
             <div className="painel-header">
-              <h3>
-                <FiUsers size={16} />
-                Jogadores
-              </h3>
+              <h3><FiUsers size={16} /> Jogadores</h3>
               <span className="painel-header__count">{jogadores.length}</span>
             </div>
             <div className="jogadores-list">
               {jogadores.map((membro, idx) => (
                 <div key={idx} className="jogador-card">
                   <div className="jogador-card__avatar">
-                    {membro.profile?.avatar_url ? (
-                      <img src={membro.profile.avatar_url} alt="" />
-                    ) : (
-                      <div className="avatar-placeholder">
-                        <FiUser size={16} />
-                      </div>
-                    )}
+                    {membro.profile?.avatar_url ? <img src={membro.profile.avatar_url} alt="" /> : <div className="avatar-placeholder"><FiUser size={16} /></div>}
                   </div>
                   <div className="jogador-card__info">
                     <p className="jogador-card__nome">{membro.profile?.username || 'Carregando...'}</p>
@@ -199,37 +188,24 @@ export default function PainelLateral({
               ))}
             </div>
           </div>
-        )
-
-      case 'mapas':
-        return (
+        )}
+        {abaAtiva === 'mapas' && (
           <div className="painel-mapas">
             <div className="painel-header">
-              <h3>
-                <FiMap size={16} />
-                Mapas
-              </h3>
-              {papel === 'gm' && (
-                <button className="btn-icon">
-                  <FiPlus size={14} />
-                </button>
-              )}
+              <h3><FiMap size={16} /> Mapas</h3>
+              {papel === 'gm' && <button className="btn-icon"><FiPlus size={14} /></button>}
             </div>
             <div className="mapas-list">
-              {mapas.length > 0 ? (
-                mapas.map(mapa => (
-                  <div key={mapa.id} className="mapa-card">
-                    <div className="mapa-card__preview">
-                      <FiImage size={24} />
-                    </div>
-                    <div className="mapa-card__info">
-                      <p className="mapa-card__nome">{mapa.nome}</p>
-                      {mapa.favorito && <FiBookmark size={12} className="mapa-card__fav" />}
-                    </div>
-                    <FiChevronRight size={14} className="mapa-card__arrow" />
+              {mapas.length > 0 ? mapas.map(mapa => (
+                <div key={mapa.id} className="mapa-card">
+                  <div className="mapa-card__preview"><FiImage size={24} /></div>
+                  <div className="mapa-card__info">
+                    <p className="mapa-card__nome">{mapa.nome}</p>
+                    {mapa.favorito && <FiBookmark size={12} className="mapa-card__fav" />}
                   </div>
-                ))
-              ) : (
+                  <FiChevronRight size={14} className="mapa-card__arrow" />
+                </div>
+              )) : (
                 <div className="painel-empty">
                   <FiMap size={32} />
                   <p>Nenhum mapa</p>
@@ -238,111 +214,26 @@ export default function PainelLateral({
               )}
             </div>
           </div>
-        )
-
-      case 'resumo':
-        return (
+        )}
+        {abaAtiva === 'resumo' && (
           <div className="painel-resumo">
-            <div className="painel-header">
-              <h3>
-                <FiFileText size={16} />
-                Resumo da Campanha
-              </h3>
-            </div>
-            <div className="resumo-content">
-              <p className="resumo-placeholder">
-                Anotações e resumos das sessões aparecerão aqui.
-              </p>
-            </div>
+            <div className="painel-header"><h3><FiFileText size={16} /> Resumo da Campanha</h3></div>
+            <div className="resumo-content"><p className="resumo-placeholder">Anotações e resumos das sessões aparecerão aqui.</p></div>
           </div>
-        )
-
-      case 'regras':
-        return (
+        )}
+        {abaAtiva === 'regras' && (
           <div className="painel-regras">
-            <div className="painel-header">
-              <h3>
-                <FiBookOpen size={16} />
-                Regras da Mesa
-              </h3>
-            </div>
-            <div className="regras-content">
-              <p className="regras-placeholder">
-                As regras opcionais configuradas para esta mesa serão exibidas aqui.
-              </p>
-            </div>
+            <div className="painel-header"><h3><FiBookOpen size={16} /> Regras da Mesa</h3></div>
+            <div className="regras-content"><p className="regras-placeholder">As regras opcionais configuradas para esta mesa serão exibidas aqui.</p></div>
           </div>
-        )
-
-      default:
-        return (
+        )}
+        {(abaAtiva === 'pastas' || abaAtiva === 'musica') && (
           <div className="painel-empty">
-            <FiBookOpen size={32} />
+            <FiFolder size={32} />
             <p>Em desenvolvimento</p>
             <span>Em breve mais funcionalidades</span>
           </div>
-        )
-    }
-  }
-
-  return (
-    <aside className="painel-lateral">
-      <div className="painel-lateral__header">
-        <div className="painel-lateral__tabs">
-          <button 
-            className={`painel-tab ${abaAtiva === 'chat' ? 'active' : ''}`}
-            onClick={() => setAbaAtiva('chat')}
-            title="Chat"
-          >
-            <FiMessageSquare size={16} />
-          </button>
-          <button 
-            className={`painel-tab ${abaAtiva === 'jogadores' ? 'active' : ''}`}
-            onClick={() => setAbaAtiva('jogadores')}
-            title="Jogadores"
-          >
-            <FiUsers size={16} />
-          </button>
-          <button 
-            className={`painel-tab ${abaAtiva === 'mapas' ? 'active' : ''}`}
-            onClick={() => setAbaAtiva('mapas')}
-            title="Mapas"
-          >
-            <FiMap size={16} />
-          </button>
-          <button 
-            className={`painel-tab ${abaAtiva === 'resumo' ? 'active' : ''}`}
-            onClick={() => setAbaAtiva('resumo')}
-            title="Resumo"
-          >
-            <FiFileText size={16} />
-          </button>
-          <button 
-            className={`painel-tab ${abaAtiva === 'regras' ? 'active' : ''}`}
-            onClick={() => setAbaAtiva('regras')}
-            title="Regras"
-          >
-            <FiBookOpen size={16} />
-          </button>
-          <button 
-            className={`painel-tab ${abaAtiva === 'pastas' ? 'active' : ''}`}
-            onClick={() => setAbaAtiva('pastas')}
-            title="Pastas"
-          >
-            <FiFolder size={16} />
-          </button>
-          <button 
-            className={`painel-tab ${abaAtiva === 'musica' ? 'active' : ''}`}
-            onClick={() => setAbaAtiva('musica')}
-            title="Música"
-          >
-            <FiMusic size={16} />
-          </button>
-        </div>
-      </div>
-
-      <div className="painel-lateral__content">
-        {renderConteudo()}
+        )}
       </div>
     </aside>
   )

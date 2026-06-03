@@ -1,20 +1,13 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
+import { 
+  FiMenu, FiMessageSquare, FiUsers, FiMap, FiFileText, 
+  FiBookOpen, FiFolder, FiMusic
+} from 'react-icons/fi'
 import { supabase } from '../../lib/supabase'
 import { useAuth } from '../../App'
 import PainelLateral from './PainelLateral'
 import './MesaJogo.css'
-
-// Ícones temporários (até integrar com react-icons)
-const IconMenu = () => <span className="icon-mock">☰</span>
-const IconUsers = () => <span className="icon-mock">👥</span>
-const IconMap = () => <span className="icon-mock">🗺️</span>
-const IconChat = () => <span className="icon-mock">💬</span>
-const IconDice = () => <span className="icon-mock">🎲</span>
-const IconBook = () => <span className="icon-mock">📖</span>
-const IconFolder = () => <span className="icon-mock">📁</span>
-const IconMusic = () => <span className="icon-mock">🎵</span>
-const IconGear = () => <span className="icon-mock">⚙️</span>
 
 export default function MesaJogo() {
   const { id: mesaId } = useParams()
@@ -23,13 +16,10 @@ export default function MesaJogo() {
 
   const [loading, setLoading] = useState(true)
   const [mesa, setMesa] = useState(null)
-  const [papel, setPapel] = useState(null) // 'gm' ou 'jogador'
-  const [painelAberto, setPainelAberto] = useState(true)
-  const [abaAtiva, setAbaAtiva] = useState('chat') // chat, jogadores, mapas, resumo, regras, compendio, pastas, musica
-
-  // Estado do mapa/vtt
+  const [papel, setPapel] = useState(null)
+  const [painelAberto, setPainelAberto] = useState(false) // começa fechado
+  const [abaAtiva, setAbaAtiva] = useState('chat')
   const [mapaAtual, setMapaAtual] = useState(null)
-  const [tokens, setTokens] = useState([])
 
   useEffect(() => {
     if (!user || !profile) {
@@ -42,7 +32,6 @@ export default function MesaJogo() {
   async function carregarMesa() {
     setLoading(true)
     try {
-      // Carregar dados da mesa
       const { data: mesaData, error: mesaError } = await supabase
         .from('mesas')
         .select('*')
@@ -52,7 +41,6 @@ export default function MesaJogo() {
       if (mesaError) throw mesaError
       setMesa(mesaData)
 
-      // Verificar papel do usuário
       const { data: membroData } = await supabase
         .from('mesa_membros')
         .select('papel')
@@ -62,15 +50,12 @@ export default function MesaJogo() {
 
       setPapel(membroData?.papel || null)
 
-      // Se não for membro, redirecionar
       if (!membroData) {
         navigate('/mesas')
         return
       }
 
-      // Carregar mapas
       await carregarMapas()
-
     } catch (err) {
       console.error('Erro ao carregar mesa:', err)
       navigate('/mesas')
@@ -93,6 +78,12 @@ export default function MesaJogo() {
     }
   }
 
+  // Função para abrir o painel com a aba específica
+  function abrirPainelComAba(aba) {
+    setAbaAtiva(aba)
+    setPainelAberto(true)
+  }
+
   if (loading) {
     return (
       <div className="mesa-loading">
@@ -104,67 +95,101 @@ export default function MesaJogo() {
 
   return (
     <div className="mesa-jogo">
-      {/* Botão toggle do painel */}
-      <button 
-        className={`mesa-toggle ${!painelAberto ? 'mesa-toggle--closed' : ''}`}
-        onClick={() => setPainelAberto(!painelAberto)}
-        title={painelAberto ? 'Fechar painel' : 'Abrir painel'}
-      >
-        <IconMenu />
-      </button>
+      {/* Topbar */}
+      <div className="mesa-topbar">
+        <button 
+          className="mesa-toggle"
+          onClick={() => setPainelAberto(!painelAberto)}
+          title={painelAberto ? 'Fechar painel' : 'Abrir painel'}
+        >
+          <FiMenu size={18} />
+        </button>
 
-      {/* Área principal do VTT */}
-      <div className={`mesa-vtt ${!painelAberto ? 'mesa-vtt--full' : ''}`}>
-        <div className="mesa-vtt__header">
-          <h1 className="mesa-vtt__title">{mesa?.nome}</h1>
-          <div className="mesa-vtt__badge">
+        {/* Botões de abas - SEMPRE visíveis na topbar */}
+        <div className="mesa-topbar__tabs">
+          <button 
+            className={`topbar-tab ${abaAtiva === 'chat' && !painelAberto ? 'active' : ''}`}
+            onClick={() => abrirPainelComAba('chat')}
+          >
+            <FiMessageSquare size={14} />
+            <span></span>
+          </button>
+          <button 
+            className={`topbar-tab ${abaAtiva === 'jogadores' && !painelAberto ? 'active' : ''}`}
+            onClick={() => abrirPainelComAba('jogadores')}
+          >
+            <FiUsers size={14} />
+            <span></span>
+          </button>
+          <button 
+            className={`topbar-tab ${abaAtiva === 'mapas' && !painelAberto ? 'active' : ''}`}
+            onClick={() => abrirPainelComAba('mapas')}
+          >
+            <FiMap size={14} />
+            <span></span>
+          </button>
+          <button 
+            className={`topbar-tab ${abaAtiva === 'resumo' && !painelAberto ? 'active' : ''}`}
+            onClick={() => abrirPainelComAba('resumo')}
+          >
+            <FiFileText size={14} />
+            <span></span>
+          </button>
+          <button 
+            className={`topbar-tab ${abaAtiva === 'regras' && !painelAberto ? 'active' : ''}`}
+            onClick={() => abrirPainelComAba('regras')}
+          >
+            <FiBookOpen size={14} />
+            <span></span>
+          </button>
+          <button 
+            className={`topbar-tab ${abaAtiva === 'pastas' && !painelAberto ? 'active' : ''}`}
+            onClick={() => abrirPainelComAba('pastas')}
+          >
+            <FiFolder size={14} />
+            <span></span>
+          </button>
+          <button 
+            className={`topbar-tab ${abaAtiva === 'musica' && !painelAberto ? 'active' : ''}`}
+            onClick={() => abrirPainelComAba('musica')}
+          >
+            <FiMusic size={14} />
+            <span></span>
+          </button>
+        </div>
+
+        <div className="mesa-topbar__info">
+          <span className="mesa-topbar__nome">{mesa?.nome}</span>
+          <span className={`mesa-topbar__badge ${papel === 'gm' ? 'badge--gm' : 'badge--player'}`}>
             {papel === 'gm' ? 'Mestre' : 'Jogador'}
-          </div>
-        </div>
-
-        <div className="mesa-vtt__canvas">
-          {/* Placeholder do mapa */}
-          {mapaAtual ? (
-            <div className="mesa-mapa">
-              <img 
-                src={mapaAtual.url} 
-                alt={mapaAtual.nome}
-                className="mesa-mapa__img"
-              />
-              <div className="mesa-mapa__overlay">
-                <p className="mesa-mapa__nome">{mapaAtual.nome}</p>
-              </div>
-            </div>
-          ) : (
-            <div className="mesa-vtt__empty">
-              <div className="mesa-vtt__empty-icon">🗺️</div>
-              <p>Nenhum mapa disponível</p>
-              {papel === 'gm' && (
-                <button className="btn btn-sm">Adicionar Mapa</button>
-              )}
-            </div>
-          )}
-        </div>
-
-        {/* Barra de ações rápida */}
-        <div className="mesa-actions">
-          <button className="mesa-actions__btn" title="Rolar Dado">
-            <IconDice /> D20
-          </button>
-          <button className="mesa-actions__btn" title="Iniciativa">
-            <span>⚡</span> Iniciativa
-          </button>
-          <button className="mesa-actions__btn" title="Turno">
-            <span>⟳</span> Turno
-          </button>
+          </span>
         </div>
       </div>
 
-      {/* Painel lateral */}
+      {/* Área do VTT */}
+      <div className={`mesa-vtt ${!painelAberto ? 'mesa-vtt--full' : ''}`}>
+        <div className="mesa-vtt__canvas">
+          {mapaAtual ? (
+            <div className="mesa-mapa">
+              <img src={mapaAtual.url} alt={mapaAtual.nome} className="mesa-mapa__img" />
+              <div className="mesa-mapa__overlay"><span>{mapaAtual.nome}</span></div>
+            </div>
+          ) : (
+            <div className="mesa-vtt__empty">
+              <FiMap size={48} />
+              <p>Nenhum mapa disponível</p>
+              {papel === 'gm' && <button className="btn btn-sm">Adicionar Mapa</button>}
+            </div>
+          )}
+        </div>
+      </div>
+
+      {/* Painel lateral - aparece à direita quando aberto */}
       <PainelLateral 
         aberto={painelAberto}
         abaAtiva={abaAtiva}
         setAbaAtiva={setAbaAtiva}
+        setPainelAberto={setPainelAberto}
         mesaId={mesaId}
         papel={papel}
         profile={profile}

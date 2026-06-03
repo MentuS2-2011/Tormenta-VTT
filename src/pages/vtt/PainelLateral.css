@@ -3,51 +3,51 @@
    ═══════════════════════════════════════════════ */
 
 .painel-lateral {
-  width: 380px;
+  width: 320px;
   background: var(--clr-surface, #121212);
   border-left: 1px solid var(--clr-border, #2a2a2a);
   display: flex;
   flex-direction: column;
   flex-shrink: 0;
+  position: relative;
+  z-index: 150;
   animation: slideIn 0.25s ease;
 }
 
 @keyframes slideIn {
-  from {
-    transform: translateX(100%);
-  }
-  to {
-    transform: translateX(0);
-  }
+  from { transform: translateX(100%); }
+  to { transform: translateX(0); }
 }
 
 /* ── Header com abas verticais ── */
 .painel-lateral__header {
   padding: 12px 0;
-  border-bottom: 1px solid var(--clr-border, #2a2a2a);
+  border-bottom: 1px solid var(--clr-border, #2a2a2a);  
   background: var(--clr-bg, #0a0a0a);
 }
 
 .painel-lateral__tabs {
   display: flex;
+  flex-direction: row;
   justify-content: space-around;
-  gap: 4px;
-  padding: 0 8px;
+  padding: 12px 8px;
+  background: var(--clr-bg);
+  border-bottom: 1px solid var(--clr-border);
 }
 
 .painel-tab {
   flex: 1;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  padding: 10px 0;
+  gap: 4px;
+  padding: 8px 0;
   background: transparent;
   border: none;
   border-radius: 8px;
-  color: var(--clr-text-muted, #888);
+  color: var(--clr-text-muted);
   cursor: pointer;
-  transition: all 0.2s ease;
-  position: relative;
+  font-size: 12px;
 }
 
 .painel-tab:hover {
@@ -56,7 +56,7 @@
 }
 
 .painel-tab.active {
-  color: var(--clr-red-light, #cc4444);
+  color: var(--clr-red-light);
   background: var(--clr-red-faint);
 }
 
@@ -76,20 +76,17 @@
 .painel-lateral__content {
   flex: 1;
   overflow-y: auto;
-  overflow-x: hidden;
   padding: 16px;
 }
 
 .painel-lateral__content::-webkit-scrollbar {
   width: 4px;
 }
-
 .painel-lateral__content::-webkit-scrollbar-track {
   background: var(--clr-bg);
 }
-
 .painel-lateral__content::-webkit-scrollbar-thumb {
-  background: var(--clr-red-dark, #5c0e0e);
+  background: var(--clr-red-dark);
   border-radius: 4px;
 }
 
@@ -478,3 +475,6 @@
     padding: 12px;
   }
 }
+
+
+
