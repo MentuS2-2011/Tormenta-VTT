@@ -1,0 +1,281 @@
+/* ═══════════════════════════════════════════════
+   MesaJogo.css — Layout principal do VTT
+   ═══════════════════════════════════════════════ */
+
+.mesa-jogo {
+  position: fixed;
+  inset: 0;
+  top: var(--nav-height, 60px);
+  display: flex;
+  flex-direction: column;
+  background: var(--clr-bg, #0a0a0a);
+  overflow: hidden;
+}
+
+/* ── Top Bar ── */
+.mesa-topbar {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 8px 20px;
+  background: var(--clr-surface, #121212);
+  border-bottom: 1px solid var(--clr-border, #2a2a2a);
+  flex-shrink: 0;
+}
+
+.mesa-toggle {
+  width: 36px;
+  height: 36px;
+  background: var(--clr-bg, #0a0a0a);
+  border: 1px solid var(--clr-border, #2a2a2a);
+  border-radius: 8px;
+  color: var(--clr-text-muted, #888);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+}
+
+.mesa-toggle:hover {
+  background: var(--clr-red, #8b1a1a);
+  color: #fff;
+  border-color: var(--clr-red);
+}
+
+.mesa-topbar__tabs {
+  display: flex;
+  gap: 4px;
+  flex: 1;
+  overflow-x: auto;
+  scrollbar-width: none;
+}
+
+.mesa-topbar__tabs::-webkit-scrollbar {
+  display: none;
+}
+
+.topbar-tab {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 14px;
+  background: transparent;
+  border: none;
+  border-radius: 8px;
+  color: var(--clr-text-muted, #888);
+  font-family: var(--font-display, Cinzel, serif);
+  font-size: 12px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  white-space: nowrap;
+}
+
+.topbar-tab:hover {
+  background: var(--clr-red-faint, rgba(139,26,26,0.1));
+  color: var(--clr-text, #e8e8e8);
+}
+
+.topbar-tab.active {
+  background: var(--clr-red-faint);
+  color: var(--clr-red-light, #cc4444);
+}
+
+.topbar-tab span {
+  font-size: 12px;
+}
+
+.mesa-topbar__info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-shrink: 0;
+}
+
+.mesa-topbar__nome {
+  font-family: var(--font-display);
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--clr-text);
+}
+
+.mesa-topbar__badge {
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  padding: 4px 12px;
+  border-radius: 20px;
+}
+
+.badge--gm {
+  background: var(--clr-red-faint);
+  color: var(--clr-red-light);
+  border: 1px solid var(--clr-red-dark);
+}
+
+.badge--player {
+  background: rgba(160, 120, 48, 0.15);
+  color: var(--clr-gold, #a07830);
+  border: 1px solid rgba(160, 120, 48, 0.3);
+}
+
+/* ── Área VTT ── */
+.mesa-vtt {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  background: #0d0d0d;
+  overflow: hidden;
+}
+
+.mesa-vtt--full {
+  margin-right: 0;
+}
+
+/* Canvas do mapa */
+.mesa-vtt__canvas {
+  flex: 1;
+  position: relative;
+  background: #1a1a1a;
+  background-image: 
+    repeating-linear-gradient(0deg, transparent, transparent 30px, rgba(139,26,26,0.05) 30px, rgba(139,26,26,0.05) 31px),
+    repeating-linear-gradient(90deg, transparent, transparent 30px, rgba(139,26,26,0.05) 30px, rgba(139,26,26,0.05) 31px);
+  overflow: auto;
+  min-height: 0;
+}
+
+/* Placeholder do mapa */
+.mesa-mapa {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #0a0a0a;
+}
+
+.mesa-mapa__img {
+  max-width: 100%;
+  max-height: 100%;
+  object-fit: contain;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+}
+
+.mesa-mapa__overlay {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  padding: 6px 14px;
+  border-radius: 6px;
+  border-left: 3px solid var(--clr-red);
+  font-size: 13px;
+  color: var(--clr-text-muted);
+  font-family: var(--font-display);
+}
+
+/* Estado vazio */
+.mesa-vtt__empty {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  gap: 16px;
+  color: var(--clr-text-faint, #555);
+}
+
+.mesa-vtt__empty svg {
+  opacity: 0.3;
+}
+
+/* Barra de ações rápida */
+.mesa-actions {
+  display: flex;
+  gap: 12px;
+  padding: 12px 20px;
+  background: var(--clr-surface, #121212);
+  border-top: 1px solid var(--clr-border, #2a2a2a);
+  flex-shrink: 0;
+}
+
+.mesa-actions__btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 18px;
+  background: var(--clr-bg, #0a0a0a);
+  border: 1px solid var(--clr-border, #2a2a2a);
+  border-radius: 8px;
+  color: var(--clr-text-muted, #aaa);
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.mesa-actions__btn:hover {
+  background: var(--clr-red-faint);
+  border-color: var(--clr-red);
+  color: var(--clr-red-light);
+  transform: translateY(-1px);
+}
+
+/* Loading */
+.mesa-loading {
+  position: fixed;
+  inset: 0;
+  top: var(--nav-height);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: var(--clr-bg);
+}
+
+.mesa-loading__rune {
+  font-family: monospace;
+  font-size: 24px;
+  letter-spacing: 8px;
+  color: var(--clr-red);
+  opacity: 0.5;
+  animation: pulse 1.5s ease infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 0.8; }
+}
+
+/* Responsivo */
+@media (max-width: 768px) {
+  .topbar-tab span {
+    display: none;
+  }
+  
+  .topbar-tab {
+    padding: 6px 10px;
+  }
+  
+  .mesa-actions__btn span {
+    display: none;
+  }
+  
+  .mesa-actions__btn {
+    padding: 8px 12px;
+  }
+  
+  .mesa-topbar__nome {
+    max-width: 150px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+}
