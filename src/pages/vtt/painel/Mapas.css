@@ -1,0 +1,86 @@
+.mapas-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.mapas-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--clr-border-light);
+}
+
+.mapas-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.mapas-add {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--clr-red-faint);
+  border: none;
+  border-radius: 6px;
+  padding: 6px 12px;
+  color: var(--clr-red-light);
+  cursor: pointer;
+  font-size: 12px;
+}
+
+.mapas-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.mapa-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--clr-bg);
+  border-radius: 10px;
+  cursor: pointer;
+}
+
+.mapa-preview {
+  width: 48px;
+  height: 48px;
+  background: var(--clr-surface);
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mapa-info {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.mapa-nome {
+  margin: 0;
+  font-size: 13px;
+}
+
+.mapa-fav {
+  color: var(--clr-gold);
+}
+
+.mapa-arrow {
+  color: var(--clr-text-faint);
+}
+
+.mapas-empty {
+  text-align: center;
+  padding: 48px 24px;
+  color: var(--clr-text-faint);
+}

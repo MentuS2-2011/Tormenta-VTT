@@ -1,0 +1,82 @@
+.jogadores-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.jogadores-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--clr-border-light);
+}
+
+.jogadores-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 0;
+}
+
+.jogadores-count {
+  font-size: 12px;
+  padding: 2px 8px;
+  background: var(--clr-red-faint);
+  color: var(--clr-red-light);
+  border-radius: 12px;
+}
+
+.jogadores-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.jogador-item {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px;
+  background: var(--clr-bg);
+  border-radius: 10px;
+}
+
+.jogador-avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--clr-surface);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.jogador-info {
+  flex: 1;
+}
+
+.jogador-nome {
+  font-weight: 600;
+  margin: 0 0 4px 0;
+}
+
+.jogador-papel {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-size: 10px;
+  padding: 2px 8px;
+  border-radius: 12px;
+}
+
+.jogador-papel.gm {
+  background: var(--clr-red-faint);
+  color: var(--clr-red-light);
+}
+
+.jogador-papel.jogador {
+  background: rgba(160, 120, 48, 0.15);
+  color: var(--clr-gold);
+}

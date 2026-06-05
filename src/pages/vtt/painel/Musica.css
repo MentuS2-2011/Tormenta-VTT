@@ -1,0 +1,12 @@
+.musica-container {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.musica-empty {
+  text-align: center;
+  color: var(--clr-text-faint);
+  padding: 48px 24px;
+}

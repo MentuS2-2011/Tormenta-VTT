@@ -1,0 +1,24 @@
+.resumo-container {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.resumo-header h3 {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  margin: 0;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--clr-border-light);
+}
+
+.resumo-placeholder {
+  text-align: center;
+  font-style: italic;
+  color: var(--clr-text-faint);
+  padding: 32px 16px;
+  background: var(--clr-bg);
+  border-radius: 12px;
+}

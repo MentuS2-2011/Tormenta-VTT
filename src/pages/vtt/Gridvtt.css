@@ -1,0 +1,292 @@
+/* ═══════════════════════════════════════════════
+   GridVTT.css
+   ═══════════════════════════════════════════════ */
+
+.grid-vtt {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  overflow: hidden;
+  background: #1A1A1A;
+  user-select: none;
+}
+
+.grid-vtt__canvas {
+  display: block;
+  width: 100%;
+  height: 100%;
+}
+
+/* ── HUD base ── */
+.grid-hud {
+  position: absolute;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  pointer-events: all;
+}
+
+.grid-hud--tl { top: 12px; left: 12px; flex-direction: column; align-items: flex-start; }
+.grid-hud--tr { top: 12px; right: 12px; flex-direction: row; align-items: center; }
+.grid-hud--bl { bottom: 12px; left: 12px; flex-direction: row; }
+.grid-hud--br { bottom: 12px; right: 12px; }
+.grid-hud--bc {
+  bottom: 12px;
+  left: 50%;
+  transform: translateX(-50%);
+}
+
+/* Info do grid */
+.grid-hud__info {
+  background: rgba(0,0,0,0.65);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(139,26,26,0.3);
+  border-radius: 4px;
+  padding: 3px 8px;
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: rgba(240,230,211,0.6);
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+
+.grid-hud__sep { opacity: 0.4; }
+
+/* Botões do HUD */
+.grid-btn {
+  width: 30px;
+  height: 30px;
+  background: rgba(0,0,0,0.7);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(139,26,26,0.35);
+  border-radius: 4px;
+  color: rgba(240,230,211,0.7);
+  cursor: pointer;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.15s, border-color 0.15s, color 0.15s;
+  flex-shrink: 0;
+}
+
+.grid-btn:hover {
+  background: rgba(139,26,26,0.3);
+  border-color: var(--clr-red, #CC2222);
+  color: #fff;
+}
+
+.grid-btn--label {
+  width: auto;
+  padding: 0 10px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.grid-btn--active {
+  background: rgba(139,26,26,0.4);
+  border-color: var(--clr-red, #CC2222);
+  color: #F0E6D3;
+}
+
+/* Slider de zoom */
+.grid-zoom-slider {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+}
+
+.grid-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 80px;
+  height: 3px;
+  background: rgba(255,255,255,0.15);
+  border-radius: 2px;
+  outline: none;
+  cursor: pointer;
+}
+
+.grid-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  width: 12px;
+  height: 12px;
+  background: var(--clr-red, #CC2222);
+  border-radius: 50%;
+  cursor: pointer;
+}
+
+.grid-zoom-label {
+  font-family: 'Cinzel', serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  color: rgba(240,230,211,0.5);
+  min-width: 34px;
+  text-align: center;
+}
+
+/* Hint de medição */
+.grid-medida-hint {
+  background: rgba(0,0,0,0.75);
+  backdrop-filter: blur(4px);
+  border: 1px solid rgba(160,120,48,0.4);
+  border-radius: 4px;
+  padding: 5px 12px;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  color: var(--clr-gold, #C49A40);
+  white-space: nowrap;
+}
+
+/* ── Popups de configuração ── */
+.grid-popup {
+  position: absolute;
+  z-index: 20;
+  background: rgba(13,8,8,0.95);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(139,26,26,0.5);
+  border-top: 2px solid var(--clr-red, #CC2222);
+  border-radius: 4px;
+  padding: 14px;
+  min-width: 220px;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.6);
+  animation: fadeUp 0.2s ease both;
+}
+
+.grid-popup--bl { bottom: 52px; left: 12px; }
+.grid-popup--br { bottom: 52px; right: 12px; }
+
+.grid-popup__title {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: var(--clr-gold, #C49A40);
+  margin-bottom: 12px;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(139,26,26,0.3);
+}
+
+.grid-popup__row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 8px;
+}
+
+.grid-popup__row label {
+  font-family: 'Cinzel', serif;
+  font-size: 10px;
+  font-weight: 600;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: rgba(240,230,211,0.6);
+  white-space: nowrap;
+}
+
+.grid-popup__row input[type="number"] {
+  width: 64px;
+  background: rgba(255,255,255,0.06);
+  border: 1px solid rgba(139,26,26,0.4);
+  border-radius: 3px;
+  padding: 5px 8px;
+  color: #F0E6D3;
+  font-family: 'Cinzel', serif;
+  font-size: 13px;
+  text-align: center;
+  outline: none;
+}
+.grid-popup__row input:focus {
+  border-color: var(--clr-red, #CC2222);
+}
+
+.grid-popup__row--check {
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 6px;
+}
+
+.grid-popup__opcoes {
+  display: flex;
+  gap: 6px;
+  width: 100%;
+}
+
+.grid-popup__opt {
+  flex: 1;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.1);
+  border-radius: 3px;
+  padding: 6px;
+  color: rgba(240,230,211,0.5);
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.grid-popup__opt:hover {
+  border-color: rgba(139,26,26,0.5);
+  color: #F0E6D3;
+}
+.grid-popup__opt--active {
+  background: rgba(139,26,26,0.25);
+  border-color: var(--clr-red, #CC2222);
+  color: #F0E6D3;
+}
+
+.grid-popup__info {
+  font-size: 11px;
+  font-style: italic;
+  color: rgba(240,230,211,0.4);
+  margin: 6px 0 10px;
+  line-height: 1.5;
+}
+
+.grid-popup__mapa-nome {
+  font-family: 'Cinzel', serif;
+  font-size: 12px;
+  color: var(--clr-gold, #C49A40);
+  margin-bottom: 10px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.grid-popup__btn {
+  width: 100%;
+  background: var(--clr-red, #CC2222);
+  border: none;
+  border-radius: 3px;
+  padding: 8px;
+  color: #F0E6D3;
+  font-family: 'Cinzel', serif;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  cursor: pointer;
+  margin-top: 6px;
+  transition: background 0.15s;
+}
+.grid-popup__btn:hover { background: #E03030; }
+
+.grid-popup__btn--ghost {
+  background: transparent;
+  border: 1px solid rgba(255,255,255,0.1);
+  color: rgba(240,230,211,0.4);
+}
+.grid-popup__btn--ghost:hover {
+  background: rgba(255,255,255,0.04);
+  color: rgba(240,230,211,0.7);
+}

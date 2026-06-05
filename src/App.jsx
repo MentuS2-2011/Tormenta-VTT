@@ -11,7 +11,7 @@ import SignUp  from './pages/SignUp'
 import Profile from './pages/Profile'
 import Mesas   from './pages/Mesas'
 import Livros  from './pages/Livro'
-import MesaJogo   from './pages/vtt/MesaJogo'
+import MesaJogo from './pages/vtt/MesaJogo'
 // import Racas      from './pages/Racas'
 // import Classes    from './pages/Classes'
 // import Divindades from './pages/Divindades'
@@ -86,9 +86,9 @@ export default function App() {
           <Route path="/cadastro" element={user ? <Navigate to="/" replace /> : <SignUp />} />
           <Route path="/perfil"   element={user ? <Profile /> : <Navigate to="/login" replace />} />
           <Route path="/mesas"    element={user ? <Mesas /> : <Navigate to="/login" replace />} />
+          <Route path="/mesa/:id" element={user ? <MesaJogo /> : <Navigate to="/login" replace />} />
           <Route path="/livros"   element={<Livros />} />
-
-          {<Route path="/mesa/:id" element={user ? <MesaJogo /> : <Navigate to="/login" replace />} /> }
+          
           <Route path="/racas"      element={<Placeholder page="Raças" />} />
           <Route path="/classes"    element={<Placeholder page="Classes" />} />
           <Route path="/divindades" element={<Placeholder page="Divindades" />} />
