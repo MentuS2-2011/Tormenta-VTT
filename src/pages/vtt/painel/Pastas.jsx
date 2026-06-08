@@ -1,457 +1,727 @@
-import { useState, useEffect, useCallback, useRef } from 'react'
-import { 
-  FiFolder, FiFolderPlus, FiFile, FiImage, FiUsers, FiUserPlus, 
-  FiShield, FiFileText, FiTrash2, FiEdit2, FiChevronRight, 
-  FiChevronDown, FiPlus, FiUpload, FiDownload, FiX, FiSave,
-  FiUser, FiAlertCircle
+import { useState, useEffect, useRef, useCallback } from 'react'
+import {
+  FiFolder, FiFolderPlus, FiFile, FiFileText, FiImage,
+  FiPlus, FiTrash2, FiEdit2, FiChevronRight, FiChevronDown,
+  FiAlertTriangle, FiX, FiCheck, FiUpload, FiEye, FiEyeOff,
+  FiMove, FiDownload
 } from 'react-icons/fi'
+
+const ESCUDO_MESTRE_NOME = 'escudo-do-mestre.pdf'
+const ESCUDO_MESTRE_URL = '/src/assets/escudo/escudo-do-mestre.pdf'
+import { GiDragonHead, GiScrollUnfurled, GiPerson } from 'react-icons/gi'
+import { BsFilePdf, BsFileImage } from 'react-icons/bs'
 import { supabase } from '../../../lib/supabase'
 import './Pastas.css'
 
+const TIPO_ICONE = {
+  pasta:      { icon: FiFolder,        cor: '#C49A40', label: 'Pasta'       },
+  pdf:        { icon: BsFilePdf,       cor: '#CC2222', label: 'PDF'         },
+  imagem:     { icon: BsFileImage,     cor: '#185FA5', label: 'Imagem'      },
+  nota:       { icon: GiScrollUnfurled,cor: '#2D6A2D', label: 'Nota'        },
+  personagem: { icon: GiPerson,        cor: '#7B3FBE', label: 'Personagem'  },
+  ameaca:     { icon: GiDragonHead,    cor: '#8B1A1A', label: 'Ameaça'      },
+}
+
 export default function Pastas({ mesaId, papel, profile }) {
-  const [pastas, setPastas] = useState([])
-  const [arquivos, setArquivos] = useState([])
-  const [pastaAtual, setPastaAtual] = useState(null)
-  const [caminho, setCaminho] = useState([])
+  const [itens, setItens] = useState([])
+  const [abertas, setAbertas] = useState({})
   const [loading, setLoading] = useState(true)
-  const [modalAberto, setModalAberto] = useState(null)
-  const [modalData, setModalData] = useState({})
-  const [contextMenu, setContextMenu] = useState({ visible: false, x: 0, y: 0, item: null })
-  const [renameInput, setRenameInput] = useState('')
-  const fileInputRef = useRef(null)
+  const [ctxMenu, setCtxMenu] = useState(null)
+  const [modal, setModal] = useState(null)
+  const [renomear, setRenomear] = useState(null)
+  const [nomeTemp, setNomeTemp] = useState('')
+  const [itemVisualizando, setItemVisualizando] = useState(null)
+  const [movendoItem, setMovendoItem] = useState(null)
+  const pdfRef = useRef(null)
+  const imgRef = useRef(null)
+  const rootRef = useRef(null)
+
+  const isGM = papel === 'gm'
+
+  useEffect(() => { carregarItens() }, [mesaId])
 
   useEffect(() => {
-    carregarArquivos()
-  }, [mesaId, pastaAtual])
+    function handleClick(e) {
+      if (!e.target.closest('.ctx-menu')) setCtxMenu(null)
+      if (!e.target.closest('.modal-visualizar')) setItemVisualizando(null)
+    }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
 
-  async function carregarArquivos() {
+  async function carregarItens() {
     setLoading(true)
-    const parentId = pastaAtual?.id || null
     
-    const { data, error } = await supabase
+    let query = supabase
       .from('mesa_arquivos')
       .select('*')
       .eq('mesa_id', mesaId)
-      .eq('parent_id', parentId)
-      .order('tipo', { ascending: false })
+
+    // Se não for GM, só mostra itens visíveis
+    if (!isGM) {
+      query = query.eq('visivel', true)
+    }
+
+    const { data, error } = await query
+      .order('tipo', { ascending: true })
       .order('nome', { ascending: true })
 
-    if (!error && data) {
-      const pastasList = data.filter(f => f.tipo === 'pasta')
-      const arquivosList = data.filter(f => f.tipo !== 'pasta')
-      setPastas(pastasList)
-      setArquivos(arquivosList)
+    if (!error) {
+      setItens(data || [])
     }
     setLoading(false)
   }
 
-  async function criarPasta(nome) {
-    if (!nome.trim()) return
+  useEffect(() => {
+  // Só executa se for GM e a lista já foi carregada
+  if (isGM && !loading && itens) {
+    verificarECriarEscudoMestre()
+  }
+}, [isGM, loading, itens])
+
+
+
+async function verificarECriarEscudoMestre() {
+  // Verifica se o escudo já existe
+  const escudoExistente = itens.find(item => 
+    item.nome === ESCUDO_MESTRE_NOME && item.tipo === 'pdf'
+  )
+  
+  if (!escudoExistente) {
+    console.log('Criando Escudo do Mestre...')
     
-    const { error } = await supabase
+    // Cria o registro do escudo no banco
+    const { data, error } = await supabase
       .from('mesa_arquivos')
       .insert({
         mesa_id: mesaId,
-        parent_id: pastaAtual?.id || null,
-        nome: nome.trim(),
-        tipo: 'pasta',
-        criado_por: profile.id
+        parent_id: null,
+        nome: ESCUDO_MESTRE_NOME,
+        tipo: 'pdf',
+        url: ESCUDO_MESTRE_URL,
+        criado_por: profile.id,
+        visivel: true,
+        criado_em: new Date().toISOString(),
+        atualizado_em: new Date().toISOString()
       })
+      .select()
+      .single()
     
-    if (!error) {
-      carregarArquivos()
-      fecharModal()
+    if (!error && data) {
+      console.log('Escudo do Mestre criado com sucesso!')
+      setItens(prev => [...prev, data])
+    } else if (error) {
+      console.error('Erro ao criar Escudo do Mestre:', error)
     }
   }
+}
 
-  async function criarItem(tipo, nome) {
-    if (!nome.trim()) return
-    
+  async function criarItem(tipo, nome, parentId = null, extra = {}) {
+    const novoItem = {
+      mesa_id: mesaId,
+      parent_id: parentId,
+      tipo,
+      nome,
+      criado_por: profile.id,
+      visivel: true,
+      ...extra,
+    }
+
+    const { data, error } = await supabase
+      .from('mesa_arquivos')
+      .insert(novoItem)
+      .select()
+      .single()
+
+    if (!error && data) {
+      setItens(prev => [...prev, data])
+      if (parentId) setAbertas(prev => ({ ...prev, [parentId]: true }))
+    }
+    return data
+  }
+
+  async function atualizarItem(id, updates) {
     const { error } = await supabase
       .from('mesa_arquivos')
-      .insert({
-        mesa_id: mesaId,
-        parent_id: pastaAtual?.id || null,
-        nome: nome.trim(),
-        tipo: tipo,
-        conteudo: tipo === 'nota' ? { texto: '' } : {},
-        criado_por: profile.id
-      })
-    
+      .update(updates)
+      .eq('id', id)
+
     if (!error) {
-      carregarArquivos()
-      fecharModal()
+      setItens(prev => prev.map(i => i.id === id ? { ...i, ...updates } : i))
     }
   }
 
-  async function uploadArquivo(file, tipo) {
+  async function moverItem(itemId, novaPastaId) {
+    await atualizarItem(itemId, { parent_id: novaPastaId })
+    setMovendoItem(null)
+  }
+
+  async function toggleVisibilidade(id, visivelAtual) {
+    if (!isGM) return
+    await atualizarItem(id, { visivel: !visivelAtual })
+  }
+
+  async function excluirItem(id) {
+    const ids = coletarIds(id)
+    await supabase.from('mesa_arquivos').delete().in('id', ids)
+    setItens(prev => prev.filter(i => !ids.includes(i.id)))
+  }
+
+  function coletarIds(id) {
+    const filhos = itens.filter(i => i.parent_id === id)
+    return [id, ...filhos.flatMap(f => coletarIds(f.id))]
+  }
+
+  async function handleUpload(e, tipo, parentId) {
+    const file = e.target.files[0]
     if (!file) return
     
-    const fileExt = file.name.split('.').pop()
-    const fileName = `${Date.now()}_${file.name}`
-    const filePath = `${mesaId}/${pastaAtual?.id || 'root'}/${fileName}`
-    
+    const ext = file.name.split('.').pop()
+    const path = `${mesaId}/${Date.now()}.${ext}`
+
     const { error: uploadError } = await supabase.storage
       .from('mesa-arquivos')
-      .upload(filePath, file)
-    
+      .upload(path, file, { upsert: true })
+
     if (uploadError) {
-      console.error('Erro no upload:', uploadError)
+      alert('Erro ao enviar arquivo.')
       return
     }
-    
+
     const { data: urlData } = supabase.storage
       .from('mesa-arquivos')
-      .getPublicUrl(filePath)
-    
-    const { error } = await supabase
-      .from('mesa_arquivos')
-      .insert({
-        mesa_id: mesaId,
-        parent_id: pastaAtual?.id || null,
-        nome: file.name,
-        tipo: tipo === 'pdf' ? 'pdf' : 'imagem',
-        url: urlData.publicUrl,
-        criado_por: profile.id
-      })
-    
-    if (!error) carregarArquivos()
+      .getPublicUrl(path)
+
+    await criarItem(tipo, file.name, parentId, { url: urlData.publicUrl })
+    e.target.value = ''
   }
 
-  async function deletarItem(item) {
-    if (item.tipo === 'pasta') {
-      // Deletar recursivamente
-      const { error } = await supabase
-        .from('mesa_arquivos')
-        .delete()
-        .eq('id', item.id)
-      
-      if (!error) carregarArquivos()
-    } else {
-      if (item.url) {
-        const path = item.url.split('/').slice(-3).join('/')
-        await supabase.storage.from('mesa-arquivos').remove([path])
-      }
-      
-      const { error } = await supabase
-        .from('mesa_arquivos')
-        .delete()
-        .eq('id', item.id)
-      
-      if (!error) carregarArquivos()
-    }
-    fecharContextMenu()
-  }
-
-  async function renomearItem(item, novoNome) {
-    if (!novoNome.trim() || novoNome === item.nome) return
-    
-    const { error } = await supabase
-      .from('mesa_arquivos')
-      .update({ nome: novoNome.trim() })
-      .eq('id', item.id)
-    
-    if (!error) carregarArquivos()
-    setRenameInput('')
-  }
-
-  async function atualizarNota(item, conteudo) {
-    const { error } = await supabase
-      .from('mesa_arquivos')
-      .update({ conteudo: { texto: conteudo } })
-      .eq('id', item.id)
-    
-    if (!error) carregarArquivos()
-  }
-
-  function abrirPasta(pasta) {
-    setCaminho([...caminho, pasta])
-    setPastaAtual(pasta)
-  }
-
-  function voltarPasta() {
-    const novoCaminho = [...caminho]
-    novoCaminho.pop()
-    setCaminho(novoCaminho)
-    setPastaAtual(novoCaminho[novoCaminho.length - 1] || null)
-  }
-
-  function abrirModal(tipo, dados = {}) {
-    setModalData({ tipo, ...dados })
-    setModalAberto(tipo)
-  }
-
-  function fecharModal() {
-    setModalAberto(null)
-    setModalData({})
-  }
-
-  function abrirContextMenu(e, item) {
+  function abrirCtx(e, alvo) {
     e.preventDefault()
-    setContextMenu({
-      visible: true,
-      x: e.clientX,
-      y: e.clientY,
-      item: item
+    e.stopPropagation()
+    setCtxMenu({ x: e.clientX, y: e.clientY, alvo })
+  }
+
+  function filhosDirectos(parentId) {
+    const filhos = itens.filter(i => i.parent_id === (parentId || null))
+    // Ordenar: 1º Escudo do Mestre (se for GM), 2º Pastas, 3º Demais em ordem alfabética
+    return filhos.sort((a, b) => {
+      // Escudo do Mestre primeiro (apenas para GM)
+      if (isGM && a.nome === 'escudo-do-mestre.pdf') return -1
+      if (isGM && b.nome === 'escudo-do-mestre.pdf') return 1
+      
+      // Pastas depois
+      if (a.tipo === 'pasta' && b.tipo !== 'pasta') return -1
+      if (a.tipo !== 'pasta' && b.tipo === 'pasta') return 1
+      
+      // Ordem alfabética
+      return a.nome.localeCompare(b.nome)
     })
   }
 
-  function fecharContextMenu() {
-    setContextMenu({ visible: false, x: 0, y: 0, item: null })
+  function togglePasta(id) {
+    setAbertas(prev => ({ ...prev, [id]: !prev[id] }))
   }
 
-  useEffect(() => {
-    const handleClick = () => fecharContextMenu()
-    document.addEventListener('click', handleClick)
-    return () => document.removeEventListener('click', handleClick)
-  }, [])
-
-  const getIcon = (item) => {
-    if (item.tipo === 'pasta') return <FiFolder size={20} />
-    if (item.tipo === 'pdf') return <FiFile size={20} />
-    if (item.tipo === 'imagem') return <FiImage size={20} />
-    if (item.tipo === 'personagem') return <FiUsers size={20} />
-    if (item.tipo === 'ameaca') return <FiShield size={20} />
-    if (item.tipo === 'nota') return <FiFileText size={20} />
-    return <FiFile size={20} />
+  function abrirItem(item) {
+    setItemVisualizando(item)
   }
+
+  function opcoesCtx(alvo) {
+    const ehPasta = alvo === 'root' || alvo?.tipo === 'pasta'
+    const parentId = alvo === 'root' ? null : alvo?.tipo === 'pasta' ? alvo.id : alvo?.parent_id
+    const opts = []
+
+    if (ehPasta) {
+      opts.push({ label: 'Nova Pasta', icon: FiFolderPlus, acao: () => abrirModal('pasta', parentId) })
+      opts.push({ label: 'Adicionar PDF', icon: BsFilePdf, acao: () => { setModal({ tipo: 'upload-pdf', parentId }); setTimeout(() => pdfRef.current?.click(), 100) } })
+      opts.push({ label: 'Adicionar Imagem', icon: BsFileImage, acao: () => { setModal({ tipo: 'upload-img', parentId }); setTimeout(() => imgRef.current?.click(), 100) } })
+      opts.push({ label: 'Criar Nota', icon: GiScrollUnfurled, acao: () => abrirModal('nota', parentId) })
+      opts.push({ label: 'Criar Personagem', icon: GiPerson, acao: () => abrirModal('personagem', parentId) })
+      if (isGM) opts.push({ label: 'Criar Ameaça', icon: GiDragonHead, acao: () => abrirModal('ameaca', parentId) })
+      
+      if (alvo !== 'root') {
+        opts.push({ sep: true })
+        opts.push({ label: 'Renomear', icon: FiEdit2, acao: () => { setRenomear(alvo.id); setNomeTemp(alvo.nome); setCtxMenu(null) } })
+        if (isGM) {
+          opts.push({ 
+            label: alvo.visivel !== false ? 'Ocultar para todos' : 'Mostrar para todos', 
+            icon: alvo.visivel !== false ? FiEyeOff : FiEye, 
+            acao: () => toggleVisibilidade(alvo.id, alvo.visivel !== false)
+          })
+        }
+        opts.push({ label: 'Excluir', icon: FiTrash2, acao: () => abrirModal('confirmar-excluir', alvo), danger: true })
+      }
+    } else if (alvo) {
+      opts.push({ label: 'Abrir', icon: FiFileText, acao: () => { abrirItem(alvo); setCtxMenu(null) } })
+      opts.push({ label: 'Mover para...', icon: FiMove, acao: () => setMovendoItem(alvo) })
+      opts.push({ label: 'Renomear', icon: FiEdit2, acao: () => { setRenomear(alvo.id); setNomeTemp(alvo.nome); setCtxMenu(null) } })
+      if (isGM && alvo.nome === ESCUDO_MESTRE_NOME) {
+        opts.push({ 
+          label: 'Remover Escudo (não recomendado)', 
+          icon: FiTrash2, 
+          acao: () => abrirModal('confirmar-excluir', alvo),
+          danger: true 
+        })
+      }
+      if (isGM) {
+        opts.push({ 
+          label: alvo.visivel !== false ? 'Ocultar para todos' : 'Mostrar para todos', 
+          icon: alvo.visivel !== false ? FiEyeOff : FiEye, 
+          acao: () => toggleVisibilidade(alvo.id, alvo.visivel !== false)
+        })
+      }
+      opts.push({ label: 'Excluir', icon: FiTrash2, acao: () => abrirModal('confirmar-excluir', alvo), danger: true })
+    }
+    return opts
+  }
+
+  function abrirModal(tipo, dados) {
+    setModal({ tipo, dados })
+    setCtxMenu(null)
+  }
+
+  function fecharModal() { setModal(null) }
+
+  function RenderNo({ item, depth = 0 }) {
+    const cfg = TIPO_ICONE[item.tipo] || TIPO_ICONE.nota
+    const Icon = cfg.icon
+    const aberta = abertas[item.id]
+    const filhos = item.tipo === 'pasta' ? filhosDirectos(item.id) : []
+    const editando = renomear === item.id
+    const isHidden = item.visivel === false && isGM
+
+    return (
+      <div className="pasta-no">
+        <div
+          className={`pasta-no__linha ${isHidden ? 'pasta-no__linha--hidden' : ''}`}
+          style={{ paddingLeft: `${12 + depth * 16}px` }}
+          onContextMenu={e => abrirCtx(e, item)}
+          onClick={() => item.tipo === 'pasta' ? togglePasta(item.id) : abrirItem(item)}
+          onDoubleClick={() => item.tipo !== 'pasta' && abrirItem(item)}
+        >
+          {item.tipo === 'pasta' ? (
+            <span className="pasta-no__chevron">
+              {aberta ? <FiChevronDown size={12} /> : <FiChevronRight size={12} />}
+            </span>
+          ) : (
+            <span className="pasta-no__chevron pasta-no__chevron--leaf" />
+          )}
+
+          <Icon size={15} style={{ color: cfg.cor, flexShrink: 0 }} />
+          {isHidden && <FiEyeOff size={10} style={{ color: '#888' }} />}
+
+          {editando ? (
+            <input
+              className="pasta-no__rename-input"
+              value={nomeTemp}
+              autoFocus
+              onChange={e => setNomeTemp(e.target.value)}
+              onKeyDown={e => {
+                if (e.key === 'Enter') { atualizarItem(item.id, { nome: nomeTemp }); setRenomear(null) }
+                if (e.key === 'Escape') setRenomear(null)
+              }}
+              onBlur={() => { atualizarItem(item.id, { nome: nomeTemp }); setRenomear(null) }}
+              onClick={e => e.stopPropagation()}
+            />
+          ) : (
+            <span className="pasta-no__nome">{item.nome}</span>
+          )}
+
+          <span className="pasta-no__tipo" style={{ color: cfg.cor }}>{cfg.label}</span>
+        </div>
+
+        {item.tipo === 'pasta' && aberta && filhos.length > 0 && (
+          <div className="pasta-no__filhos">
+            {filhos.map(f => <RenderNo key={f.id} item={f} depth={depth + 1} />)}
+          </div>
+        )}
+
+        {item.tipo === 'pasta' && aberta && filhos.length === 0 && (
+          <div className="pasta-no__vazia" style={{ paddingLeft: `${28 + depth * 16}px` }}>
+            Pasta vazia
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  function ModalVisualizar({ item, onClose }) {
+    const cfg = TIPO_ICONE[item.tipo]
+    const podeEditar = isGM || item.criado_por === profile.id
+    const [personagemData, setPersonagemData] = useState(null)
+    const [ameacaData, setAmeacaData] = useState(null)
+
+    useEffect(() => {
+      if (item.tipo === 'personagem' && item.conteudo) {
+        setPersonagemData(item.conteudo)
+      } else if (item.tipo === 'ameaca' && item.conteudo) {
+        setAmeacaData(item.conteudo)
+      }
+    }, [item])
+
+    if (item.tipo === 'pdf') {
+      return (
+        <div className="modal-visualizar modal-visualizar--pdf" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-visualizar__container">
+            <div className="modal-visualizar__header">
+              <h3>{item.nome}</h3>
+              <button onClick={onClose}><FiX /></button>
+            </div>
+            <iframe src={item.url} className="modal-visualizar__pdf" title={item.nome} />
+          </div>
+        </div>
+      )
+    }
+
+    if (item.tipo === 'imagem') {
+      return (
+        <div className="modal-visualizar modal-visualizar--imagem" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-visualizar__container">
+            <div className="modal-visualizar__header">
+              <h3>{item.nome}</h3>
+              <button onClick={onClose}><FiX /></button>
+            </div>
+            <img src={item.url} alt={item.nome} className="modal-visualizar__imagem" />
+          </div>
+        </div>
+      )
+    }
+
+    if (item.tipo === 'personagem') {
+      const dados = personagemData || {}
+      const isOwner = item.criado_por === profile.id
+      const showFull = isGM || isOwner
+
+      return (
+        <div className="modal-visualizar modal-visualizar--personagem" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-visualizar__container">
+            <div className="modal-visualizar__header">
+              <h3>{item.nome}</h3>
+              <button onClick={onClose}><FiX /></button>
+            </div>
+            <div className="personagem-visualizacao">
+              <div className="personagem-visualizacao__header">
+                {dados.imagem_url && <img src={dados.imagem_url} alt={item.nome} className="personagem-imagem" />}
+                {dados.token_url && <img src={dados.token_url} alt="Token" className="personagem-token" />}
+              </div>
+              <div className="personagem-visualizacao__stats">
+                <div className="stat">
+                  <span className="stat-label">PV</span>
+                  <span className="stat-value">{showFull ? `${dados.pv_atual || 0}/${dados.pv_max || 0}` : '???'}</span>
+                </div>
+                <div className="stat">
+                  <span className="stat-label">PM</span>
+                  <span className="stat-value">{showFull ? `${dados.pm_atual || 0}/${dados.pm_max || 0}` : '???'}</span>
+                </div>
+                {showFull && (
+                  <>
+                    <div className="stat">
+                      <span className="stat-label">Nível</span>
+                      <span className="stat-value">{dados.nivel_principal || 1}</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-label">Classe</span>
+                      <span className="stat-value">{dados.classe_principal || '-'}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+              {showFull && dados.historia && (
+                <div className="personagem-visualizacao__historia">
+                  <h4>História</h4>
+                  <p>{dados.historia}</p>
+                </div>
+              )}
+              {!showFull && <p className="personagem-visualizacao__aviso">Apenas o Mestre e o Jogador podem ver detalhes completos.</p>}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    if (item.tipo === 'ameaca') {
+      const dados = ameacaData || {}
+
+      return (
+        <div className="modal-visualizar modal-visualizar--ameaca" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-visualizar__container">
+            <div className="modal-visualizar__header">
+              <h3>{item.nome}</h3>
+              <button onClick={onClose}><FiX /></button>
+            </div>
+            <div className="ameaca-visualizacao">
+              <div className="ameaca-visualizacao__header">
+                {dados.imagem_url && <img src={dados.imagem_url} alt={item.nome} className="ameaca-imagem" />}
+                {dados.token_url && <img src={dados.token_url} alt="Token" className="ameaca-token" />}
+              </div>
+              <div className="ameaca-visualizacao__stats">
+                <div className="stat">
+                  <span className="stat-label">ND</span>
+                  <span className="stat-value">{isGM ? (dados.nd || '-') : '???'}</span>
+                </div>
+                <div className="stat">
+                  <span className="stat-label">PV</span>
+                  <span className="stat-value">{isGM ? (dados.pv || '???') : '???'}</span>
+                </div>
+                {isGM && (
+                  <>
+                    <div className="stat">
+                      <span className="stat-label">Defesa</span>
+                      <span className="stat-value">{dados.defesa || '-'}</span>
+                    </div>
+                    <div className="stat">
+                      <span className="stat-label">Tamanho</span>
+                      <span className="stat-value">{dados.tamanho || '-'}</span>
+                    </div>
+                  </>
+                )}
+              </div>
+              {!isGM && <p className="ameaca-visualizacao__aviso">Apenas o Mestre pode ver os detalhes completos da ameaça.</p>}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    if (item.tipo === 'nota') {
+      const podeEditarNota = isGM || item.criado_por === profile.id
+      const [conteudo, setConteudo] = useState(item.conteudo?.texto || '')
+
+      const salvarNota = async () => {
+        await atualizarItem(item.id, { conteudo: { ...item.conteudo, texto: conteudo } })
+      }
+
+      return (
+        <div className="modal-visualizar modal-visualizar--nota" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-visualizar__container">
+            <div className="modal-visualizar__header">
+              <h3>{item.nome}</h3>
+              <button onClick={onClose}><FiX /></button>
+            </div>
+            <div className="nota-visualizacao">
+              {podeEditarNota ? (
+                <textarea
+                  className="nota-editor"
+                  value={conteudo}
+                  onChange={e => setConteudo(e.target.value)}
+                  onBlur={salvarNota}
+                  placeholder="Escreva sua nota aqui..."
+                />
+              ) : (
+                <p className="nota-conteudo">{conteudo || 'Sem conteúdo'}</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )
+    }
+
+    return null
+  }
+
+  function ModalMoverItem({ item, onClose }) {
+    const [selectedParent, setSelectedParent] = useState(null)
+    
+    const pastas = itens.filter(i => i.tipo === 'pasta')
+    
+    const renderPastaOption = (pasta, depth = 0) => {
+      return (
+        <div key={pasta.id}>
+          <button
+            className={`mover-option ${selectedParent === pasta.id ? 'selected' : ''}`}
+            style={{ paddingLeft: `${12 + depth * 16}px` }}
+            onClick={() => setSelectedParent(pasta.id)}
+          >
+            <FiFolder size={14} /> {pasta.nome}
+          </button>
+          {abertas[pasta.id] && pastas.filter(p => p.parent_id === pasta.id).map(p => renderPastaOption(p, depth + 1))}
+        </div>
+      )
+    }
+
+    return (
+      <div className="pp-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="pp-box pp-box--mover">
+          <div className="pp-header">
+            <span>Mover "{item.nome}" para...</span>
+            <button className="pp-close" onClick={onClose}><FiX /></button>
+          </div>
+          <div className="pp-body mover-items">
+            <button
+              className={`mover-option ${selectedParent === null ? 'selected' : ''}`}
+              onClick={() => setSelectedParent(null)}
+            >
+              <FiFolder size={14} /> Raiz
+            </button>
+            {pastas.filter(p => !p.parent_id).map(p => renderPastaOption(p))}
+          </div>
+          <div className="pp-footer">
+            <button className="pp-btn pp-btn--ghost" onClick={onClose}>Cancelar</button>
+            <button className="pp-btn pp-btn--confirm" onClick={() => { moverItem(item.id, selectedParent); onClose() }}>
+              Mover
+            </button>
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  const raiz = filhosDirectos(null)
 
   return (
-    <div className="pastas-container" onClick={fecharContextMenu}>
-      {/* Header com botões */}
+    <div className="pastas-painel" ref={rootRef}>
       <div className="pastas-header">
-        <div className="pastas-breadcrumb">
-          <button className="breadcrumb-btn" onClick={() => { setPastaAtual(null); setCaminho([]) }}>
-            Raiz
-          </button>
-          {caminho.map((pasta, idx) => (
-            <span key={pasta.id}>
-              <FiChevronRight size={12} />
-              <button className="breadcrumb-btn" onClick={() => {
-                setCaminho(caminho.slice(0, idx + 1))
-                setPastaAtual(pasta)
-              }}>
-                {pasta.nome}
-              </button>
-            </span>
-          ))}
-        </div>
-        
-        <div className="pastas-actions">
-          <button className="action-btn" onClick={() => abrirModal('pasta')} title="Nova Pasta">
-            <FiFolderPlus size={16} /> Pasta
-          </button>
-          <button className="action-btn" onClick={() => fileInputRef.current?.click()} title="Upload PDF/Imagem">
-            <FiUpload size={16} /> Upload
-          </button>
-          <button className="action-btn" onClick={() => abrirModal('personagem')} title="Novo Personagem">
-            <FiUserPlus size={16} /> Personagem
-          </button>
-          {papel === 'gm' && (
-            <button className="action-btn" onClick={() => abrirModal('ameaca')} title="Nova Ameaça">
-              <FiShield size={16} /> Ameaça
-            </button>
-          )}
-          <button className="action-btn" onClick={() => abrirModal('nota')} title="Nova Nota">
-            <FiFileText size={16} /> Nota
-          </button>
+        <span className="pastas-header__title">
+          <FiFolder size={14} /> Arquivos
+        </span>
+        <div className="pastas-header__actions">
+          <AddDropdown isGM={isGM} pdfRef={pdfRef} imgRef={imgRef}
+            onAction={(tipo, parentId) => abrirModal(tipo, parentId)} />
         </div>
       </div>
 
-      {/* Input file escondido */}
-      <input
-        ref={fileInputRef}
-        type="file"
-        accept=".pdf,image/*"
-        style={{ display: 'none' }}
-        onChange={(e) => {
-          const file = e.target.files[0]
-          if (file) {
-            const tipo = file.type.includes('pdf') ? 'pdf' : 'imagem'
-            uploadArquivo(file, tipo)
-          }
-          e.target.value = ''
-        }}
-      />
-
-      {/* Loading */}
-      {loading && (
-        <div className="pastas-loading">
-          <div className="spinner" />
-          <p>Carregando arquivos...</p>
-        </div>
-      )}
-
-      {/* Conteúdo */}
-      {!loading && (
-        <div className="pastas-content">
-          {/* Pastas */}
-          {pastas.length > 0 && (
-            <div className="pastas-section">
-              <h4 className="section-title"><FiFolder size={14} /> Pastas</h4>
-              <div className="pastas-grid">
-                {pastas.map(pasta => (
-                  <div
-                    key={pasta.id}
-                    className="pasta-item"
-                    onDoubleClick={() => abrirPasta(pasta)}
-                    onContextMenu={(e) => abrirContextMenu(e, pasta)}
-                  >
-                    <div className="pasta-icon"><FiFolder size={32} /></div>
-                    <span className="pasta-nome">{pasta.nome}</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Arquivos */}
-          {arquivos.length > 0 && (
-            <div className="arquivos-section">
-              <h4 className="section-title"><FiFile size={14} /> Arquivos</h4>
-              <div className="arquivos-grid">
-                {arquivos.map(arquivo => (
-                  <div
-                    key={arquivo.id}
-                    className={`arquivo-item tipo-${arquivo.tipo}`}
-                    onContextMenu={(e) => abrirContextMenu(e, arquivo)}
-                    onClick={() => {
-                      if (arquivo.tipo === 'nota') abrirModal('editar-nota', { item: arquivo })
-                      if (arquivo.tipo === 'personagem') console.log('Abrir personagem:', arquivo)
-                      if (arquivo.tipo === 'ameaca') console.log('Abrir ameaça:', arquivo)
-                    }}
-                  >
-                    <div className="arquivo-icon">{getIcon(arquivo)}</div>
-                    <span className="arquivo-nome">{arquivo.nome}</span>
-                    {arquivo.tipo === 'imagem' && (
-                      <div className="arquivo-preview">
-                        <img src={arquivo.url} alt={arquivo.nome} />
-                      </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-
-          {/* Vazio */}
-          {pastas.length === 0 && arquivos.length === 0 && (
-            <div className="pastas-empty">
-              <FiFolder size={48} />
-              <p>Pasta vazia</p>
-              <span>Clique em "+" para adicionar arquivos</span>
-            </div>
-          )}
-        </div>
-      )}
-
-      {/* Context Menu */}
-      {contextMenu.visible && (
-        <div 
-          className="context-menu"
-          style={{ top: contextMenu.y, left: contextMenu.x }}
-        >
-          <button onClick={() => {
-            setRenameInput(contextMenu.item.nome)
-            fecharContextMenu()
-            const novoNome = prompt('Novo nome:', contextMenu.item.nome)
-            if (novoNome) renomearItem(contextMenu.item, novoNome)
-          }}>
-            <FiEdit2 size={14} /> Renomear
-          </button>
-          <button className="danger" onClick={() => {
-            if (confirm(`Tem certeza que deseja excluir "${contextMenu.item.nome}"?`)) {
-              deletarItem(contextMenu.item)
-            }
-          }}>
-            <FiTrash2 size={14} /> Excluir
-          </button>
-        </div>
-      )}
-
-      {/* Modal de criação */}
-      {modalAberto && modalAberto !== 'editar-nota' && (
-        <div className="modal-overlay" onClick={fecharModal}>
-          <div className="modal-content" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3>
-                {modalData.tipo === 'pasta' && <FiFolderPlus size={18} />}
-                {modalData.tipo === 'personagem' && <FiUsers size={18} />}
-                {modalData.tipo === 'ameaca' && <FiShield size={18} />}
-                {modalData.tipo === 'nota' && <FiFileText size={18} />}
-                {modalData.tipo === 'pasta' && 'Nova Pasta'}
-                {modalData.tipo === 'personagem' && 'Novo Personagem'}
-                {modalData.tipo === 'ameaca' && 'Nova Ameaça'}
-                {modalData.tipo === 'nota' && 'Nova Nota'}
-              </h3>
-              <button className="close-btn" onClick={fecharModal}><FiX size={18} /></button>
-            </div>
-            <div className="modal-body">
-              <input
-                type="text"
-                className="modal-input"
-                placeholder={`Nome da ${modalData.tipo === 'pasta' ? 'pasta' : modalData.tipo === 'personagem' ? 'personagem' : modalData.tipo === 'ameaca' ? 'ameaça' : 'nota'}`}
-                autoFocus
-                onKeyPress={(e) => {
-                  if (e.key === 'Enter') {
-                    if (modalData.tipo === 'pasta') criarPasta(e.target.value)
-                    else if (modalData.tipo === 'personagem') criarItem('personagem', e.target.value)
-                    else if (modalData.tipo === 'ameaca') criarItem('ameaca', e.target.value)
-                    else if (modalData.tipo === 'nota') criarItem('nota', e.target.value)
-                  }
-                }}
-              />
-              {modalData.tipo === 'personagem' && (
-                <p className="modal-hint">⚡ Em breve: ficha completa de personagem</p>
-              )}
-              {modalData.tipo === 'ameaca' && (
-                <p className="modal-hint">⚔️ Em breve: ficha completa de ameaça</p>
-              )}
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={fecharModal}>Cancelar</button>
-              <button className="btn-primary" onClick={() => {
-                const input = document.querySelector('.modal-input')
-                if (modalData.tipo === 'pasta') criarPasta(input.value)
-                else if (modalData.tipo === 'personagem') criarItem('personagem', input.value)
-                else if (modalData.tipo === 'ameaca') criarItem('ameaca', input.value)
-                else if (modalData.tipo === 'nota') criarItem('nota', input.value)
-              }}>Criar</button>
-            </div>
+      <div className="pastas-raiz">
+        {loading ? (
+          <div className="pastas-empty"><span>Carregando...</span></div>
+        ) : raiz.length === 0 ? (
+          <div className="pastas-empty">
+            <FiFolder size={28} style={{ opacity: 0.2 }} />
+            <span>Nenhum arquivo ainda</span>
+            <small>Clique em + Add ou botão direito</small>
           </div>
+        ) : (
+          raiz.map(item => <RenderNo key={item.id} item={item} />)
+        )}
+      </div>
+
+      <input ref={pdfRef} type="file" accept=".pdf" style={{ display: 'none' }}
+        onChange={e => handleUpload(e, 'pdf', modal?.dados || null)} />
+      <input ref={imgRef} type="file" accept="image/*" style={{ display: 'none' }}
+        onChange={e => handleUpload(e, 'imagem', modal?.dados || null)} />
+
+      {ctxMenu && (
+        <div className="ctx-menu" style={{ top: ctxMenu.y, left: ctxMenu.x }}>
+          {opcoesCtx(ctxMenu.alvo).map((opt, i) =>
+            opt.sep ? <div key={i} className="ctx-sep" /> :
+            <button key={i} className={`ctx-item ${opt.danger ? 'ctx-item--danger' : ''}`}
+              onClick={() => { opt.acao(); setCtxMenu(null) }}>
+              <opt.icon size={13} /> {opt.label}
+            </button>
+          )}
         </div>
       )}
 
-      {/* Modal de editar nota */}
-      {modalAberto === 'editar-nota' && modalData.item && (
-        <div className="modal-overlay" onClick={fecharModal}>
-          <div className="modal-content modal-large" onClick={(e) => e.stopPropagation()}>
-            <div className="modal-header">
-              <h3><FiFileText size={18} /> Editar Nota: {modalData.item.nome}</h3>
-              <button className="close-btn" onClick={fecharModal}><FiX size={18} /></button>
-            </div>
-            <div className="modal-body">
-              <textarea
-                className="modal-textarea"
-                defaultValue={modalData.item.conteudo?.texto || ''}
-                placeholder="Escreva sua nota aqui..."
-                rows={15}
-                id="nota-conteudo"
-              />
-            </div>
-            <div className="modal-footer">
-              <button className="btn-secondary" onClick={fecharModal}>Cancelar</button>
-              <button className="btn-primary" onClick={() => {
-                const conteudo = document.getElementById('nota-conteudo').value
-                atualizarNota(modalData.item, conteudo)
-                fecharModal()
-              }}>
-                <FiSave size={14} /> Salvar
-              </button>
-            </div>
-          </div>
+      {itemVisualizando && <ModalVisualizar item={itemVisualizando} onClose={() => setItemVisualizando(null)} />}
+      {movendoItem && <ModalMoverItem item={movendoItem} onClose={() => setMovendoItem(null)} />}
+      
+      {modal?.tipo === 'pasta' && <ModalNovaPasta parentId={modal.dados} onClose={fecharModal} />}
+      {modal?.tipo === 'nota' && <ModalNovaNota parentId={modal.dados} onClose={fecharModal} />}
+      {modal?.tipo === 'personagem' && <ModalPersonagem parentId={modal.dados} onClose={fecharModal} />}
+      {modal?.tipo === 'ameaca' && <ModalAmeaca parentId={modal.dados} onClose={fecharModal} />}
+      {modal?.tipo === 'confirmar-excluir' && <ModalConfirmarExcluir item={modal.dados} onClose={fecharModal} />}
+    </div>
+  )
+}
+
+// Modais simplificados...
+function ModalNovaPasta({ parentId, onClose }) {
+  const [nome, setNome] = useState('')
+  return (
+    <PopupSimples titulo="Nova Pasta" onClose={onClose} onConfirm={() => {}} confirmLabel="Criar">
+      <input className="pp-input" placeholder="Nome da pasta" value={nome} onChange={e => setNome(e.target.value)} autoFocus />
+    </PopupSimples>
+  )
+}
+
+function ModalNovaNota({ parentId, onClose }) {
+  const [nome, setNome] = useState('')
+  return (
+    <PopupSimples titulo="Nova Nota" onClose={onClose} onConfirm={() => {}} confirmLabel="Criar">
+      <input className="pp-input" placeholder="Título da nota" value={nome} onChange={e => setNome(e.target.value)} autoFocus />
+    </PopupSimples>
+  )
+}
+
+function ModalPersonagem({ parentId, onClose }) {
+  const [nome, setNome] = useState('')
+  return (
+    <PopupSimples titulo="Novo Personagem" onClose={onClose} onConfirm={() => {}} confirmLabel="Criar">
+      <input className="pp-input" placeholder="Nome do personagem" value={nome} onChange={e => setNome(e.target.value)} autoFocus />
+    </PopupSimples>
+  )
+}
+
+function ModalAmeaca({ parentId, onClose }) {
+  const [nome, setNome] = useState('')
+  return (
+    <PopupSimples titulo="Nova Ameaça" onClose={onClose} onConfirm={() => {}} confirmLabel="Criar">
+      <input className="pp-input" placeholder="Nome da ameaça" value={nome} onChange={e => setNome(e.target.value)} autoFocus />
+    </PopupSimples>
+  )
+}
+
+function ModalConfirmarExcluir({ item, onClose }) {
+  return (
+    <PopupSimples titulo="Confirmar exclusão" onClose={onClose} onConfirm={() => {}} confirmLabel="Excluir" danger>
+      <p>Excluir "{item.nome}" permanentemente?</p>
+    </PopupSimples>
+  )
+}
+
+function AddDropdown({ isGM, onAction, pdfRef, imgRef }) {
+  const [open, setOpen] = useState(false)
+  const ref = useRef(null)
+
+  useEffect(() => {
+    function handleClick(e) { if (!ref.current?.contains(e.target)) setOpen(false) }
+    document.addEventListener('mousedown', handleClick)
+    return () => document.removeEventListener('mousedown', handleClick)
+  }, [])
+
+  const opcoes = [
+    { label: 'Nova Pasta', icon: FiFolderPlus, acao: () => onAction('pasta', null) },
+    { label: 'Adicionar PDF', icon: BsFilePdf, acao: () => pdfRef.current?.click() },
+    { label: 'Adicionar Imagem', icon: BsFileImage, acao: () => imgRef.current?.click() },
+    { label: 'Criar Nota', icon: GiScrollUnfurled, acao: () => onAction('nota', null) },
+    { label: 'Criar Personagem', icon: GiPerson, acao: () => onAction('personagem', null) },
+    ...(isGM ? [{ label: 'Criar Ameaça', icon: GiDragonHead, acao: () => onAction('ameaca', null) }] : []),
+  ]
+
+  return (
+    <div className="add-dropdown" ref={ref}>
+      <button className="add-btn" onClick={() => setOpen(v => !v)}>
+        <FiPlus size={13} /> Add
+      </button>
+      {open && (
+        <div className="add-dropdown__menu">
+          {opcoes.map((opt, i) => (
+            <button key={i} className="add-dropdown__item" onClick={() => { opt.acao(); setOpen(false) }}>
+              <opt.icon size={13} /> {opt.label}
+            </button>
+          ))}
         </div>
       )}
+    </div>
+  )
+}
+
+function PopupSimples({ titulo, children, onClose, onConfirm, confirmLabel = 'Confirmar', danger = false }) {
+  return (
+    <div className="pp-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
+      <div className="pp-box">
+        <div className="pp-header">
+          <span>{titulo}</span>
+          <button className="pp-close" onClick={onClose}><FiX size={15} /></button>
+        </div>
+        <div className="pp-body">{children}</div>
+        <div className="pp-footer">
+          <button className="pp-btn pp-btn--ghost" onClick={onClose}>Cancelar</button>
+          <button className={`pp-btn ${danger ? 'pp-btn--danger' : 'pp-btn--confirm'}`} onClick={onConfirm}>
+            {confirmLabel}
+          </button>
+        </div>
+      </div>
     </div>
   )
 }
