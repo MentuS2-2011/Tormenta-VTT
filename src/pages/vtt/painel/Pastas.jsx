@@ -2,7 +2,7 @@ import { useState, useEffect, useRef } from 'react'
 import {
   FiFolder, FiFolderPlus, FiFileText, FiImage,
   FiPlus, FiTrash2, FiEdit2, FiChevronRight, FiChevronDown,
-  FiAlertTriangle, FiX, FiEye, FiEyeOff, FiMove
+  FiAlertTriangle, FiX, FiEye, FiEyeOff, FiMove, FiCheck
 } from 'react-icons/fi'
 import { GiDragonHead, GiScrollUnfurled, GiPerson } from 'react-icons/gi'
 import { BsFilePdf, BsFileImage } from 'react-icons/bs'
@@ -33,16 +33,18 @@ export default function Pastas({ mesaId, papel, profile }) {
   const [itemVisualizando, setItemVisualizando] = useState(null)
   const [movendoItem, setMovendoItem] = useState(null)
   const [excluindo, setExcluindo] = useState(false)
-  const [editandoPersonagem, setEditandoPersonagem] = useState(null)  // MOVIDO PARA CÁ
+  const [editandoPersonagem, setEditandoPersonagem] = useState(null)
+  const [jogadores, setJogadores] = useState([])
   const pdfRef = useRef(null)
   const imgRef = useRef(null)
   const rootRef = useRef(null)
 
   const isGM = papel === 'gm'
 
-  // Carregar itens ao montar
+  // Carregar itens e jogadores ao montar
   useEffect(() => {
     carregarItens()
+    carregarJogadores()
   }, [mesaId])
 
   // Fechar menus ao clicar fora
@@ -66,6 +68,17 @@ export default function Pastas({ mesaId, papel, profile }) {
   // FUNÇÕES CRUD
   // ============================================
 
+  async function carregarJogadores() {
+    const { data } = await supabase
+      .from('mesa_membros')
+      .select('profile_id, profiles(id, username)')
+      .eq('mesa_id', mesaId)
+    
+    if (data) {
+      setJogadores(data.map(m => ({ id: m.profile_id, ...m.profiles })))
+    }
+  }
+
   async function carregarItens() {
     setLoading(true)
     
@@ -74,17 +87,27 @@ export default function Pastas({ mesaId, papel, profile }) {
       .select('*')
       .eq('mesa_id', mesaId)
 
-    if (!isGM) {
-      query = query.eq('visivel', true)
-    }
-
     const { data, error } = await query
       .order('tipo', { ascending: true })
       .order('nome', { ascending: true })
-
-    if (!error) {
+    
+    if (!error && data) {
+      if (!isGM) {
+        // Filtrar itens que o jogador pode ver
+        const itensVisiveis = data.filter(item => {
+          if (item.visivel === false) return false
+          const visibilidadePorJogador = item.visibilidade_por_jogador || {}
+          if (Object.keys(visibilidadePorJogador).length === 0) return true
+          return visibilidadePorJogador[profile.id] === true
+        })
+        setItens(itensVisiveis)
+      } else {
+        setItens(data)
+      }
+    } else {
       setItens(data || [])
     }
+    
     setLoading(false)
   }
 
@@ -156,12 +179,6 @@ export default function Pastas({ mesaId, papel, profile }) {
     if (excluindo) return
     setExcluindo(true)
 
-    const itemParaExcluir = itens.find(i => i.id === id)
-    if (!itemParaExcluir) {
-      setExcluindo(false)
-      return
-    }
-
     const idsParaExcluir = coletarIds(id)
 
     const { error } = await supabase
@@ -192,6 +209,26 @@ export default function Pastas({ mesaId, papel, profile }) {
   async function toggleVisibilidade(id, visivelAtual) {
     if (!isGM) return
     await atualizarItem(id, { visivel: !visivelAtual })
+  }
+
+  async function atualizarVisibilidadePorJogador(itemId, profileId, visivel) {
+    const item = itens.find(i => i.id === itemId)
+    const visibilidadeAtual = item?.visibilidade_por_jogador || {}
+    
+    let novaVisibilidade
+    
+    if (profileId === 'todos') {
+      novaVisibilidade = null
+    } else if (visivel === true) {
+      // Se for para mostrar apenas para este jogador, limpa outros e adiciona este
+      novaVisibilidade = { [profileId]: true }
+    } else {
+      // Se for para remover este jogador
+      const { [profileId]: _, ...restante } = visibilidadeAtual
+      novaVisibilidade = Object.keys(restante).length > 0 ? restante : null
+    }
+    
+    await atualizarItem(itemId, { visibilidade_por_jogador: novaVisibilidade })
   }
 
   async function handleUpload(e, tipo, parentId) {
@@ -225,15 +262,10 @@ export default function Pastas({ mesaId, papel, profile }) {
   function filhosDirectos(parentId) {
     const filhos = itens.filter(i => i.parent_id === (parentId || null))
     return filhos.sort((a, b) => {
-      // Escudo do Mestre primeiro (apenas para GM)
       if (isGM && a.nome === ESCUDO_MESTRE_NOME) return -1
       if (isGM && b.nome === ESCUDO_MESTRE_NOME) return 1
-      
-      // Pastas primeiro
       if (a.tipo === 'pasta' && b.tipo !== 'pasta') return -1
       if (a.tipo !== 'pasta' && b.tipo === 'pasta') return 1
-      
-      // Ordem alfabética
       return a.nome.localeCompare(b.nome)
     })
   }
@@ -262,7 +294,7 @@ export default function Pastas({ mesaId, papel, profile }) {
   }
 
   // ============================================
-  // MENU DE CONTEXTO
+  // OPÇÕES DO MENU DE CONTEXTO
   // ============================================
 
   function opcoesCtx(alvo) {
@@ -281,9 +313,33 @@ export default function Pastas({ mesaId, papel, profile }) {
       if (alvo !== 'root') {
         opts.push({ sep: true })
         opts.push({ label: 'Renomear', icon: FiEdit2, acao: () => { setRenomear(alvo.id); setNomeTemp(alvo.nome); setCtxMenu(null) } })
+        
+        if (isGM && jogadores.length > 0) {
+          const visibilidadeAtual = alvo.visibilidade_por_jogador || {}
+          const temRestricao = visibilidadeAtual !== null && Object.keys(visibilidadeAtual).length > 0
+          
+          opts.push({
+            label: `👁️ Visibilidade`,
+            icon: FiEye,
+            submenu: [
+              {
+                label: 'Todos os jogadores',
+                icon: !temRestricao ? FiCheck : FiEye,
+                acao: () => atualizarVisibilidadePorJogador(alvo.id, 'todos', false)
+              },
+              { sep: true },
+              ...jogadores.map(j => ({
+                label: `Apenas ${j.username}`,
+                icon: visibilidadeAtual?.[j.id] === true ? FiCheck : FiEye,
+                acao: () => atualizarVisibilidadePorJogador(alvo.id, j.id, true)
+              }))
+            ]
+          })
+        }
+        
         if (isGM) {
           opts.push({ 
-            label: alvo.visivel !== false ? 'Ocultar para todos' : 'Mostrar para todos', 
+            label: alvo.visivel !== false ? '👁️ Ocultar para todos' : '👁️ Mostrar para todos', 
             icon: alvo.visivel !== false ? FiEyeOff : FiEye, 
             acao: () => toggleVisibilidade(alvo.id, alvo.visivel !== false)
           })
@@ -294,9 +350,33 @@ export default function Pastas({ mesaId, papel, profile }) {
       opts.push({ label: 'Abrir', icon: FiFileText, acao: () => { abrirItem(alvo); setCtxMenu(null) } })
       opts.push({ label: 'Mover para...', icon: FiMove, acao: () => setMovendoItem(alvo) })
       opts.push({ label: 'Renomear', icon: FiEdit2, acao: () => { setRenomear(alvo.id); setNomeTemp(alvo.nome); setCtxMenu(null) } })
+      
+      if (isGM && jogadores.length > 0) {
+        const visibilidadeAtual = alvo.visibilidade_por_jogador || {}
+        const temRestricao = visibilidadeAtual !== null && Object.keys(visibilidadeAtual).length > 0
+        
+        opts.push({
+          label: `👁️ Visibilidade`,
+          icon: FiEye,
+          submenu: [
+            {
+              label: 'Todos os jogadores',
+              icon: !temRestricao ? FiCheck : FiEye,
+              acao: () => atualizarVisibilidadePorJogador(alvo.id, 'todos', false)
+            },
+            { sep: true },
+            ...jogadores.map(j => ({
+              label: `Apenas ${j.username}`,
+              icon: visibilidadeAtual?.[j.id] === true ? FiCheck : FiEye,
+              acao: () => atualizarVisibilidadePorJogador(alvo.id, j.id, true)
+            }))
+          ]
+        })
+      }
+      
       if (isGM) {
         opts.push({ 
-          label: alvo.visivel !== false ? 'Ocultar para todos' : 'Mostrar para todos', 
+          label: alvo.visivel !== false ? '👁️ Ocultar para todos' : '👁️ Mostrar para todos', 
           icon: alvo.visivel !== false ? FiEyeOff : FiEye, 
           acao: () => toggleVisibilidade(alvo.id, alvo.visivel !== false)
         })
@@ -317,6 +397,9 @@ export default function Pastas({ mesaId, papel, profile }) {
     const filhos = item.tipo === 'pasta' ? filhosDirectos(item.id) : []
     const editando = renomear === item.id
     const isHidden = item.visivel === false && isGM
+    const visibilidadePorJogador = item.visibilidade_por_jogador || {}
+    const temVisibilidadeRestrita = isGM && visibilidadePorJogador !== null && Object.keys(visibilidadePorJogador).length > 0
+    const visivelApenasPara = temVisibilidadeRestrita ? jogadores.filter(j => visibilidadePorJogador[j.id] === true).map(j => j.username) : []
 
     return (
       <div className="pasta-no">
@@ -336,6 +419,13 @@ export default function Pastas({ mesaId, papel, profile }) {
           )}
 
           <Icon size={15} style={{ color: cfg.cor, flexShrink: 0 }} />
+          
+          {temVisibilidadeRestrita && (
+            <span className="pasta-no__visibilidade-indicator" title={`Visível apenas para: ${visivelApenasPara.join(', ')}`}>
+              👁️ {visivelApenasPara.length}
+            </span>
+          )}
+          
           {isHidden && <FiEyeOff size={10} style={{ color: '#888' }} />}
 
           {editando ? (
@@ -533,282 +623,240 @@ export default function Pastas({ mesaId, papel, profile }) {
   // ============================================
 
   function ModalVisualizar({ item, onClose }) {
-  const [conteudo, setConteudo] = useState(item.conteudo?.texto || '')
-  const [imagemExpandida, setImagemExpandida] = useState(null)
-  const podeEditar = isGM || item.criado_por === profile.id
+    const [conteudo, setConteudo] = useState(item.conteudo?.texto || '')
+    const [imagemExpandida, setImagemExpandida] = useState(null)
+    const podeEditar = isGM || item.criado_por === profile.id
 
-  async function salvarNota() {
-    if (item.tipo === 'nota') {
-      await atualizarItem(item.id, { conteudo: { ...item.conteudo, texto: conteudo } })
+    async function salvarNota() {
+      if (item.tipo === 'nota') {
+        await atualizarItem(item.id, { conteudo: { ...item.conteudo, texto: conteudo } })
+      }
     }
-  }
 
-  // PDF
-  if (item.tipo === 'pdf') {
-    return (
-      <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
-        <div className="modal-visualizar__container">
-          <div className="modal-visualizar__header">
-            <h3>{item.nome}</h3>
-            <button onClick={onClose}><FiX /></button>
-          </div>
-          <iframe src={item.url} className="modal-visualizar__pdf" title={item.nome} />
-        </div>
-      </div>
-    )
-  }
-
-  // Imagem
-  if (item.tipo === 'imagem') {
-    return (
-      <>
+    if (item.tipo === 'pdf') {
+      return (
         <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
-          <div className="modal-visualizar__container modal-visualizar__container--imagem">
+          <div className="modal-visualizar__container">
             <div className="modal-visualizar__header">
               <h3>{item.nome}</h3>
               <button onClick={onClose}><FiX /></button>
             </div>
-            <img 
-              src={item.url} 
-              alt={item.nome} 
-              className="modal-visualizar__imagem"
-              onClick={() => setImagemExpandida(item.url)}
-              style={{ cursor: 'pointer' }}
-            />
+            <iframe src={item.url} className="modal-visualizar__pdf" title={item.nome} />
           </div>
         </div>
-        {imagemExpandida && (
-          <ImageViewer 
-            src={imagemExpandida} 
-            alt={item.nome} 
-            onClose={() => setImagemExpandida(null)} 
-          />
-        )}
-      </>
-    )
-  }
+      )
+    }
 
-  // Nota
-  if (item.tipo === 'nota') {
-    return (
-      <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
-        <div className="modal-visualizar__container">
-          <div className="modal-visualizar__header">
-            <h3>{item.nome}</h3>
-            <button onClick={onClose}><FiX /></button>
-          </div>
-          <div className="nota-visualizacao">
-            {podeEditar ? (
-              <textarea
-                className="nota-editor"
-                value={conteudo}
-                onChange={e => setConteudo(e.target.value)}
-                onBlur={salvarNota}
-                placeholder="Escreva sua nota aqui..."
+    if (item.tipo === 'imagem') {
+      return (
+        <>
+          <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
+            <div className="modal-visualizar__container modal-visualizar__container--imagem">
+              <div className="modal-visualizar__header">
+                <h3>{item.nome}</h3>
+                <button onClick={onClose}><FiX /></button>
+              </div>
+              <img 
+                src={item.url} 
+                alt={item.nome} 
+                className="modal-visualizar__imagem"
+                onClick={() => setImagemExpandida(item.url)}
+                style={{ cursor: 'pointer' }}
               />
-            ) : (
-              <div className="nota-conteudo">{conteudo || 'Sem conteúdo'}</div>
-            )}
+            </div>
           </div>
-        </div>
-      </div>
-    )
-  }
+          {imagemExpandida && (
+            <ImageViewer 
+              src={imagemExpandida} 
+              alt={item.nome} 
+              onClose={() => setImagemExpandida(null)} 
+            />
+          )}
+        </>
+      )
+    }
 
-  // Personagem - VERSÃO SIMPLIFICADA
-  if (item.tipo === 'personagem') {
-    const dados = item.conteudo || {}
-    const isOwner = item.criado_por === profile.id
-    const showFull = isGM || isOwner
-
-    return (
-      <>
+    if (item.tipo === 'nota') {
+      return (
         <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
-          <div className="modal-visualizar__container modal-visualizar__container--personagem">
+          <div className="modal-visualizar__container">
             <div className="modal-visualizar__header">
-              <h3>{dados.nome || item.nome}</h3>
+              <h3>{item.nome}</h3>
               <button onClick={onClose}><FiX /></button>
             </div>
-            
-            <div className="personagem-visualizacao-simplificado">
-              {/* Imagens */}
-              <div className="personagem-imagens-simplificado">
-                {dados.imagem_url && (
-                  <div className="personagem-img-wrapper">
-                    <img 
-                      src={dados.imagem_url} 
-                      alt="Personagem" 
-                      className="personagem-imagem-simplificado"
-                      onClick={() => setImagemExpandida(dados.imagem_url)}
-                    />
-                    <button 
-                      className="img-zoom-btn"
-                      onClick={() => setImagemExpandida(dados.imagem_url)}
-                    >
-                      🔍
-                    </button>
-                  </div>
-                )}
-                {dados.token_url && (
-                  <div className="personagem-img-wrapper">
-                    <img 
-                      src={dados.token_url} 
-                      alt="Token" 
-                      className="personagem-token-simplificado"
-                      onClick={() => setImagemExpandida(dados.token_url)}
-                    />
-                    <button 
-                      className="img-zoom-btn"
-                      onClick={() => setImagemExpandida(dados.token_url)}
-                    >
-                      🔍
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Informações básicas */}
-              <div className="personagem-info-simplificado">
-                <div className="info-row">
-                  <span className="label">Raça:</span>
-                  <span className="value">{dados.raca || '-'}</span>
-                </div>
-                <div className="info-row">
-                  <span className="label">Classe:</span>
-                  <span className="value">
-                    {showFull ? (dados.classes?.map(c => `${c.nome} ${c.nivel}`).join(', ') || '-') : '???'}
-                  </span>
-                </div>
-              </div>
-
-              {/* Stats principais */}
-              <div className="stats-simplificado">
-                <div className="stat-simplificado">
-                  <span className="stat-label">❤️ PV</span>
-                  <span className="stat-value">{showFull ? `${dados.pv_atual || 0}/${dados.pv_max || 0}` : '???'}</span>
-                </div>
-                <div className="stat-simplificado">
-                  <span className="stat-label">💙 PM</span>
-                  <span className="stat-value">{showFull ? `${dados.pm_atual || 0}/${dados.pm_max || 0}` : '???'}</span>
-                </div>
-                <div className="stat-simplificado">
-                  <span className="stat-label">🛡️ Defesa</span>
-                  <span className="stat-value">{showFull ? (dados.defesa?.total || '-') : '???'}</span>
-                </div>
-              </div>
-
-              {!showFull && (
-                <p className="aviso-simplificado">
-                  🔒 Apenas o Mestre e o Jogador podem ver detalhes completos.
-                </p>
-              )}
-            </div>
-
-            <button className="edit-personagem-btn" onClick={() => { onClose(); setEditandoPersonagem(item); }}>
-              <FiEdit2 /> Editar Personagem
-            </button>
-          </div>
-        </div>
-        
-        {imagemExpandida && (
-          <ImageViewer 
-            src={imagemExpandida} 
-            alt="Imagem do personagem" 
-            onClose={() => setImagemExpandida(null)} 
-          />
-        )}
-      </>
-    )
-  }
-
-  // Ameaça - VERSÃO SIMPLIFICADA
-  if (item.tipo === 'ameaca') {
-    const dados = item.conteudo || {}
-
-    return (
-      <>
-        <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
-          <div className="modal-visualizar__container modal-visualizar__container--ameaca">
-            <div className="modal-visualizar__header">
-              <h3>{dados.nome || item.nome}</h3>
-              <button onClick={onClose}><FiX /></button>
-            </div>
-            
-            <div className="ameaca-visualizacao-simplificado">
-              {/* Imagens */}
-              <div className="ameaca-imagens-simplificado">
-                {dados.imagem_url && (
-                  <div className="ameaca-img-wrapper">
-                    <img 
-                      src={dados.imagem_url} 
-                      alt="Ameaça" 
-                      className="ameaca-imagem-simplificado"
-                      onClick={() => setImagemExpandida(dados.imagem_url)}
-                    />
-                    <button 
-                      className="img-zoom-btn"
-                      onClick={() => setImagemExpandida(dados.imagem_url)}
-                    >
-                      🔍
-                    </button>
-                  </div>
-                )}
-                {dados.token_url && (
-                  <div className="ameaca-img-wrapper">
-                    <img 
-                      src={dados.token_url} 
-                      alt="Token" 
-                      className="ameaca-token-simplificado"
-                      onClick={() => setImagemExpandida(dados.token_url)}
-                    />
-                    <button 
-                      className="img-zoom-btn"
-                      onClick={() => setImagemExpandida(dados.token_url)}
-                    >
-                      🔍
-                    </button>
-                  </div>
-                )}
-              </div>
-
-              {/* Stats principais */}
-              <div className="stats-simplificado">
-                <div className="stat-simplificado">
-                  <span className="stat-label">ND</span>
-                  <span className="stat-value">{isGM ? (dados.nd || '-') : '???'}</span>
-                </div>
-                <div className="stat-simplificado">
-                  <span className="stat-label">❤️ PV</span>
-                  <span className="stat-value">{isGM ? (dados.pv || '???') : '???'}</span>
-                </div>
-                <div className="stat-simplificado">
-                  <span className="stat-label">🛡️ Defesa</span>
-                  <span className="stat-value">{isGM ? (dados.defesa || '-') : '???'}</span>
-                </div>
-              </div>
-
-              {!isGM && (
-                <p className="aviso-simplificado">
-                  🔒 Apenas o Mestre pode ver os detalhes completos da ameaça.
-                </p>
+            <div className="nota-visualizacao">
+              {podeEditar ? (
+                <textarea
+                  className="nota-editor"
+                  value={conteudo}
+                  onChange={e => setConteudo(e.target.value)}
+                  onBlur={salvarNota}
+                  placeholder="Escreva sua nota aqui..."
+                />
+              ) : (
+                <div className="nota-conteudo">{conteudo || 'Sem conteúdo'}</div>
               )}
             </div>
           </div>
         </div>
-        
-        {imagemExpandida && (
-          <ImageViewer 
-            src={imagemExpandida} 
-            alt="Imagem da ameaça" 
-            onClose={() => setImagemExpandida(null)} 
-          />
-        )}
-      </>
-    )
-  }
+      )
+    }
 
-  return null
-}
+    if (item.tipo === 'personagem') {
+      const dados = item.conteudo || {}
+      const isOwner = item.criado_por === profile.id
+      const showFull = isGM || isOwner
+
+      return (
+        <>
+          <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
+            <div className="modal-visualizar__container modal-visualizar__container--personagem">
+              <div className="modal-visualizar__header">
+                <h3>{dados.nome || item.nome}</h3>
+                <button onClick={onClose}><FiX /></button>
+              </div>
+              
+              <div className="personagem-visualizacao-simplificado">
+                <div className="personagem-imagens-simplificado">
+                  {dados.imagem_url && (
+                    <div className="personagem-img-wrapper">
+                      <img 
+                        src={dados.imagem_url} 
+                        alt="Personagem" 
+                        className="personagem-imagem-simplificado"
+                        onClick={() => setImagemExpandida(dados.imagem_url)}
+                      />
+                      <button className="img-zoom-btn" onClick={() => setImagemExpandida(dados.imagem_url)}>🔍</button>
+                    </div>
+                  )}
+                  {dados.token_url && (
+                    <div className="personagem-img-wrapper">
+                      <img 
+                        src={dados.token_url} 
+                        alt="Token" 
+                        className="personagem-token-simplificado"
+                        onClick={() => setImagemExpandida(dados.token_url)}
+                      />
+                      <button className="img-zoom-btn" onClick={() => setImagemExpandida(dados.token_url)}>🔍</button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="personagem-info-simplificado">
+                  <div className="info-row">
+                    <span className="label">Raça:</span>
+                    <span className="value">{dados.raca || '-'}</span>
+                  </div>
+                  <div className="info-row">
+                    <span className="label">Classe:</span>
+                    <span className="value">
+                      {showFull ? (dados.classes?.map(c => `${c.nome} ${c.nivel}`).join(', ') || '-') : '???'}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="stats-simplificado">
+                  <div className="stat-simplificado">
+                    <span className="stat-label">❤️ PV</span>
+                    <span className="stat-value">{showFull ? `${dados.pv_atual || 0}/${dados.pv_max || 0}` : '???'}</span>
+                  </div>
+                  <div className="stat-simplificado">
+                    <span className="stat-label">💙 PM</span>
+                    <span className="stat-value">{showFull ? `${dados.pm_atual || 0}/${dados.pm_max || 0}` : '???'}</span>
+                  </div>
+                  <div className="stat-simplificado">
+                    <span className="stat-label">🛡️ Defesa</span>
+                    <span className="stat-value">{showFull ? (dados.defesa?.total || '-') : '???'}</span>
+                  </div>
+                </div>
+
+                {!showFull && (
+                  <p className="aviso-simplificado">🔒 Apenas o Mestre e o Jogador podem ver detalhes completos.</p>
+                )}
+              </div>
+
+              <button className="edit-personagem-btn" onClick={() => { onClose(); setEditandoPersonagem(item); }}>
+                <FiEdit2 /> Editar Personagem
+              </button>
+            </div>
+          </div>
+          
+          {imagemExpandida && (
+            <ImageViewer src={imagemExpandida} alt="Imagem do personagem" onClose={() => setImagemExpandida(null)} />
+          )}
+        </>
+      )
+    }
+
+    if (item.tipo === 'ameaca') {
+      const dados = item.conteudo || {}
+
+      return (
+        <>
+          <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
+            <div className="modal-visualizar__container modal-visualizar__container--ameaca">
+              <div className="modal-visualizar__header">
+                <h3>{dados.nome || item.nome}</h3>
+                <button onClick={onClose}><FiX /></button>
+              </div>
+              
+              <div className="ameaca-visualizacao-simplificado">
+                <div className="ameaca-imagens-simplificado">
+                  {dados.imagem_url && (
+                    <div className="ameaca-img-wrapper">
+                      <img 
+                        src={dados.imagem_url} 
+                        alt="Ameaça" 
+                        className="ameaca-imagem-simplificado"
+                        onClick={() => setImagemExpandida(dados.imagem_url)}
+                      />
+                      <button className="img-zoom-btn" onClick={() => setImagemExpandida(dados.imagem_url)}>🔍</button>
+                    </div>
+                  )}
+                  {dados.token_url && (
+                    <div className="ameaca-img-wrapper">
+                      <img 
+                        src={dados.token_url} 
+                        alt="Token" 
+                        className="ameaca-token-simplificado"
+                        onClick={() => setImagemExpandida(dados.token_url)}
+                      />
+                      <button className="img-zoom-btn" onClick={() => setImagemExpandida(dados.token_url)}>🔍</button>
+                    </div>
+                  )}
+                </div>
+
+                <div className="stats-simplificado">
+                  <div className="stat-simplificado">
+                    <span className="stat-label">ND</span>
+                    <span className="stat-value">{isGM ? (dados.nd || '-') : '???'}</span>
+                  </div>
+                  <div className="stat-simplificado">
+                    <span className="stat-label">❤️ PV</span>
+                    <span className="stat-value">{isGM ? (dados.pv || '???') : '???'}</span>
+                  </div>
+                  <div className="stat-simplificado">
+                    <span className="stat-label">🛡️ Defesa</span>
+                    <span className="stat-value">{isGM ? (dados.defesa || '-') : '???'}</span>
+                  </div>
+                </div>
+
+                {!isGM && (
+                  <p className="aviso-simplificado">🔒 Apenas o Mestre pode ver os detalhes completos da ameaça.</p>
+                )}
+              </div>
+            </div>
+          </div>
+          
+          {imagemExpandida && (
+            <ImageViewer src={imagemExpandida} alt="Imagem da ameaça" onClose={() => setImagemExpandida(null)} />
+          )}
+        </>
+      )
+    }
+
+    return null
+  }
 
   // ============================================
   // RENDER PRINCIPAL
@@ -846,12 +894,40 @@ export default function Pastas({ mesaId, papel, profile }) {
 
       {ctxMenu && (
         <div className="ctx-menu" style={{ top: ctxMenu.y, left: ctxMenu.x }}>
-          {opcoesCtx(ctxMenu.alvo).map((opt, i) => (
-            opt.sep ? <div key={i} className="ctx-sep" /> :
-            <button key={i} className={`ctx-item ${opt.danger ? 'ctx-item--danger' : ''}`} onClick={() => { opt.acao(); setCtxMenu(null) }}>
-              <opt.icon size={13} /> {opt.label}
-            </button>
-          ))}
+          {opcoesCtx(ctxMenu.alvo).map((opt, idx) => {
+            if (opt.sep) return <div key={idx} className="ctx-sep" />
+            if (opt.submenu) {
+              return (
+                <div key={idx} className="ctx-item ctx-item--has-submenu">
+                  <span style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <opt.icon size={13} /> {opt.label}
+                  </span>
+                  <span>›</span>
+                  <div className="ctx-submenu">
+                    {opt.submenu.map((subOpt, subIdx) => (
+                      subOpt.sep ? <div key={subIdx} className="ctx-sep" /> :
+                      <button 
+                        key={subIdx} 
+                        className="ctx-item" 
+                        onClick={() => { subOpt.acao(); setCtxMenu(null) }}
+                      >
+                        <subOpt.icon size={13} /> {subOpt.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              )
+            }
+            return (
+              <button 
+                key={idx} 
+                className={`ctx-item ${opt.danger ? 'ctx-item--danger' : ''}`} 
+                onClick={() => { opt.acao(); setCtxMenu(null) }}
+              >
+                <opt.icon size={13} /> {opt.label}
+              </button>
+            )
+          })}
         </div>
       )}
 
@@ -865,14 +941,12 @@ export default function Pastas({ mesaId, papel, profile }) {
       {modal?.tipo === 'confirmar-excluir' && <ModalConfirmarExcluir item={modal.dados} onClose={fecharModal} />}
 
       {editandoPersonagem && (
-        // Quando salvar, atualiza o item na lista sem recarregar a página
         <PersonagemEditor 
           personagem={editandoPersonagem}
           mesaId={mesaId}
           profile={profile}
           onClose={() => setEditandoPersonagem(null)}
           onSave={(updatedPersonagem) => {
-            // Atualizar na lista de itens
             setItens(prev => prev.map(item => {
               if (item.id === updatedPersonagem.id || item.id === editandoPersonagem?.id) {
                 return {
@@ -934,22 +1008,15 @@ function AddDropdown({ isGM, onAction, pdfRef, imgRef }) {
   )
 }
 
-// ============================================
-// VISUALIZADOR DE IMAGEM COM ZOOM - CORRIGIDO
-// ============================================
-
 function ImageViewer({ src, alt, onClose }) {
   const [zoom, setZoom] = useState(1)
   const [position, setPosition] = useState({ x: 0, y: 0 })
   const [isDragging, setIsDragging] = useState(false)
   const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
-  const [imgDimensions, setImgDimensions] = useState({ width: 0, height: 0 })
   const containerRef = useRef(null)
-  const imgRef = useRef(null)
 
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3))
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5))
-  
   const handleReset = () => {
     setZoom(1)
     setPosition({ x: 0, y: 0 })
@@ -975,15 +1042,6 @@ function ImageViewer({ src, alt, onClose }) {
     setIsDragging(false)
   }
 
-  // Carregar a imagem e centralizar
-  useEffect(() => {
-    const img = new Image()
-    img.onload = () => {
-      setImgDimensions({ width: img.width, height: img.height })
-    }
-    img.src = src
-  }, [src])
-
   useEffect(() => {
     document.addEventListener('mousemove', handleMouseMove)
     document.addEventListener('mouseup', handleMouseUp)
@@ -993,7 +1051,6 @@ function ImageViewer({ src, alt, onClose }) {
     }
   }, [isDragging, dragStart])
 
-  // Impedir scroll da página quando o modal está aberto
   useEffect(() => {
     document.body.style.overflow = 'hidden'
     return () => {
@@ -1022,7 +1079,6 @@ function ImageViewer({ src, alt, onClose }) {
         >
           <div className="image-viewer__image-wrapper">
             <img 
-              ref={imgRef}
               src={src} 
               alt={alt}
               className="image-viewer__image"

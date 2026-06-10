@@ -126,7 +126,7 @@ export default function Mesas() {
           </div>
           {user && (
             <div className="mesas-header__actions">
-              <button className="btn btn-outline" onClick={() => setModal('')}><FiLogIn size={14} /> Entrar na Mesa</button>
+              <button className="btn btn-outline" onClick={() => setModal('entrar')}><FiLogIn size={14} /> Entrar na Mesa</button>
               <button className="btn btn-primary" onClick={() => setModal('criar')}><FiPlus size={14} /> Criar Mesa</button>
             </div>
           )}
