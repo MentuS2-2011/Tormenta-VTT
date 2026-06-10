@@ -1,17 +1,14 @@
-import { useState, useEffect, useRef, useCallback } from 'react'
+import { useState, useEffect, useRef } from 'react'
 import {
-  FiFolder, FiFolderPlus, FiFile, FiFileText, FiImage,
+  FiFolder, FiFolderPlus, FiFileText, FiImage,
   FiPlus, FiTrash2, FiEdit2, FiChevronRight, FiChevronDown,
-  FiAlertTriangle, FiX, FiCheck, FiUpload, FiEye, FiEyeOff,
-  FiMove, FiDownload
+  FiAlertTriangle, FiX, FiEye, FiEyeOff, FiMove
 } from 'react-icons/fi'
-
-const ESCUDO_MESTRE_NOME = 'escudo-do-mestre.pdf'
-const ESCUDO_MESTRE_URL = '/src/assets/escudo/escudo-do-mestre.pdf'
 import { GiDragonHead, GiScrollUnfurled, GiPerson } from 'react-icons/gi'
 import { BsFilePdf, BsFileImage } from 'react-icons/bs'
 import { supabase } from '../../../lib/supabase'
 import './Pastas.css'
+import PersonagemEditor from './PersonagemEditor'
 
 const TIPO_ICONE = {
   pasta:      { icon: FiFolder,        cor: '#C49A40', label: 'Pasta'       },
@@ -21,6 +18,9 @@ const TIPO_ICONE = {
   personagem: { icon: GiPerson,        cor: '#7B3FBE', label: 'Personagem'  },
   ameaca:     { icon: GiDragonHead,    cor: '#8B1A1A', label: 'Ameaça'      },
 }
+
+const ESCUDO_MESTRE_NOME = 'escudo-do-mestre.pdf'
+const ESCUDO_MESTRE_URL = '/src/assets/escudo/escudo-do-mestre.pdf'
 
 export default function Pastas({ mesaId, papel, profile }) {
   const [itens, setItens] = useState([])
@@ -32,14 +32,20 @@ export default function Pastas({ mesaId, papel, profile }) {
   const [nomeTemp, setNomeTemp] = useState('')
   const [itemVisualizando, setItemVisualizando] = useState(null)
   const [movendoItem, setMovendoItem] = useState(null)
+  const [excluindo, setExcluindo] = useState(false)
+  const [editandoPersonagem, setEditandoPersonagem] = useState(null)  // MOVIDO PARA CÁ
   const pdfRef = useRef(null)
   const imgRef = useRef(null)
   const rootRef = useRef(null)
 
   const isGM = papel === 'gm'
 
-  useEffect(() => { carregarItens() }, [mesaId])
+  // Carregar itens ao montar
+  useEffect(() => {
+    carregarItens()
+  }, [mesaId])
 
+  // Fechar menus ao clicar fora
   useEffect(() => {
     function handleClick(e) {
       if (!e.target.closest('.ctx-menu')) setCtxMenu(null)
@@ -49,6 +55,17 @@ export default function Pastas({ mesaId, papel, profile }) {
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
 
+  // Criar escudo do mestre automaticamente
+  useEffect(() => {
+    if (isGM && !loading && itens.length > 0) {
+      verificarECriarEscudoMestre()
+    }
+  }, [isGM, loading, itens])
+
+  // ============================================
+  // FUNÇÕES CRUD
+  // ============================================
+
   async function carregarItens() {
     setLoading(true)
     
@@ -57,7 +74,6 @@ export default function Pastas({ mesaId, papel, profile }) {
       .select('*')
       .eq('mesa_id', mesaId)
 
-    // Se não for GM, só mostra itens visíveis
     if (!isGM) {
       query = query.eq('visivel', true)
     }
@@ -72,49 +88,31 @@ export default function Pastas({ mesaId, papel, profile }) {
     setLoading(false)
   }
 
-  useEffect(() => {
-  // Só executa se for GM e a lista já foi carregada
-  if (isGM && !loading && itens) {
-    verificarECriarEscudoMestre()
-  }
-}, [isGM, loading, itens])
-
-
-
-async function verificarECriarEscudoMestre() {
-  // Verifica se o escudo já existe
-  const escudoExistente = itens.find(item => 
-    item.nome === ESCUDO_MESTRE_NOME && item.tipo === 'pdf'
-  )
-  
-  if (!escudoExistente) {
-    console.log('Criando Escudo do Mestre...')
+  async function verificarECriarEscudoMestre() {
+    const escudoExistente = itens.find(item => 
+      item.nome === ESCUDO_MESTRE_NOME && item.tipo === 'pdf'
+    )
     
-    // Cria o registro do escudo no banco
-    const { data, error } = await supabase
-      .from('mesa_arquivos')
-      .insert({
-        mesa_id: mesaId,
-        parent_id: null,
-        nome: ESCUDO_MESTRE_NOME,
-        tipo: 'pdf',
-        url: ESCUDO_MESTRE_URL,
-        criado_por: profile.id,
-        visivel: true,
-        criado_em: new Date().toISOString(),
-        atualizado_em: new Date().toISOString()
-      })
-      .select()
-      .single()
-    
-    if (!error && data) {
-      console.log('Escudo do Mestre criado com sucesso!')
-      setItens(prev => [...prev, data])
-    } else if (error) {
-      console.error('Erro ao criar Escudo do Mestre:', error)
+    if (!escudoExistente) {
+      const { data, error } = await supabase
+        .from('mesa_arquivos')
+        .insert({
+          mesa_id: mesaId,
+          parent_id: null,
+          nome: ESCUDO_MESTRE_NOME,
+          tipo: 'pdf',
+          url: ESCUDO_MESTRE_URL,
+          criado_por: profile.id,
+          visivel: true,
+        })
+        .select()
+        .single()
+      
+      if (!error && data) {
+        setItens(prev => [...prev, data])
+      }
     }
   }
-}
 
   async function criarItem(tipo, nome, parentId = null, extra = {}) {
     const novoItem = {
@@ -135,9 +133,12 @@ async function verificarECriarEscudoMestre() {
 
     if (!error && data) {
       setItens(prev => [...prev, data])
-      if (parentId) setAbertas(prev => ({ ...prev, [parentId]: true }))
+      if (parentId) {
+        setAbertas(prev => ({ ...prev, [parentId]: true }))
+      }
+      return data
     }
-    return data
+    return null
   }
 
   async function atualizarItem(id, updates) {
@@ -151,6 +152,38 @@ async function verificarECriarEscudoMestre() {
     }
   }
 
+  async function excluirItem(id) {
+    if (excluindo) return
+    setExcluindo(true)
+
+    const itemParaExcluir = itens.find(i => i.id === id)
+    if (!itemParaExcluir) {
+      setExcluindo(false)
+      return
+    }
+
+    const idsParaExcluir = coletarIds(id)
+
+    const { error } = await supabase
+      .from('mesa_arquivos')
+      .delete()
+      .in('id', idsParaExcluir)
+
+    if (!error) {
+      setItens(prev => prev.filter(i => !idsParaExcluir.includes(i.id)))
+    }
+
+    setExcluindo(false)
+    fecharModal()
+    setCtxMenu(null)
+  }
+
+  function coletarIds(id) {
+    const filhos = itens.filter(i => i.parent_id === id)
+    const idsFilhos = filhos.flatMap(f => coletarIds(f.id))
+    return [id, ...idsFilhos]
+  }
+
   async function moverItem(itemId, novaPastaId) {
     await atualizarItem(itemId, { parent_id: novaPastaId })
     setMovendoItem(null)
@@ -159,17 +192,6 @@ async function verificarECriarEscudoMestre() {
   async function toggleVisibilidade(id, visivelAtual) {
     if (!isGM) return
     await atualizarItem(id, { visivel: !visivelAtual })
-  }
-
-  async function excluirItem(id) {
-    const ids = coletarIds(id)
-    await supabase.from('mesa_arquivos').delete().in('id', ids)
-    setItens(prev => prev.filter(i => !ids.includes(i.id)))
-  }
-
-  function coletarIds(id) {
-    const filhos = itens.filter(i => i.parent_id === id)
-    return [id, ...filhos.flatMap(f => coletarIds(f.id))]
   }
 
   async function handleUpload(e, tipo, parentId) {
@@ -196,21 +218,18 @@ async function verificarECriarEscudoMestre() {
     e.target.value = ''
   }
 
-  function abrirCtx(e, alvo) {
-    e.preventDefault()
-    e.stopPropagation()
-    setCtxMenu({ x: e.clientX, y: e.clientY, alvo })
-  }
+  // ============================================
+  // FUNÇÕES DE UI
+  // ============================================
 
   function filhosDirectos(parentId) {
     const filhos = itens.filter(i => i.parent_id === (parentId || null))
-    // Ordenar: 1º Escudo do Mestre (se for GM), 2º Pastas, 3º Demais em ordem alfabética
     return filhos.sort((a, b) => {
       // Escudo do Mestre primeiro (apenas para GM)
-      if (isGM && a.nome === 'escudo-do-mestre.pdf') return -1
-      if (isGM && b.nome === 'escudo-do-mestre.pdf') return 1
+      if (isGM && a.nome === ESCUDO_MESTRE_NOME) return -1
+      if (isGM && b.nome === ESCUDO_MESTRE_NOME) return 1
       
-      // Pastas depois
+      // Pastas primeiro
       if (a.tipo === 'pasta' && b.tipo !== 'pasta') return -1
       if (a.tipo !== 'pasta' && b.tipo === 'pasta') return 1
       
@@ -226,6 +245,25 @@ async function verificarECriarEscudoMestre() {
   function abrirItem(item) {
     setItemVisualizando(item)
   }
+
+  function abrirCtx(e, alvo) {
+    e.preventDefault()
+    e.stopPropagation()
+    setCtxMenu({ x: e.clientX, y: e.clientY, alvo })
+  }
+
+  function abrirModal(tipo, dados) {
+    setModal({ tipo, dados })
+    setCtxMenu(null)
+  }
+
+  function fecharModal() {
+    setModal(null)
+  }
+
+  // ============================================
+  // MENU DE CONTEXTO
+  // ============================================
 
   function opcoesCtx(alvo) {
     const ehPasta = alvo === 'root' || alvo?.tipo === 'pasta'
@@ -256,14 +294,6 @@ async function verificarECriarEscudoMestre() {
       opts.push({ label: 'Abrir', icon: FiFileText, acao: () => { abrirItem(alvo); setCtxMenu(null) } })
       opts.push({ label: 'Mover para...', icon: FiMove, acao: () => setMovendoItem(alvo) })
       opts.push({ label: 'Renomear', icon: FiEdit2, acao: () => { setRenomear(alvo.id); setNomeTemp(alvo.nome); setCtxMenu(null) } })
-      if (isGM && alvo.nome === ESCUDO_MESTRE_NOME) {
-        opts.push({ 
-          label: 'Remover Escudo (não recomendado)', 
-          icon: FiTrash2, 
-          acao: () => abrirModal('confirmar-excluir', alvo),
-          danger: true 
-        })
-      }
       if (isGM) {
         opts.push({ 
           label: alvo.visivel !== false ? 'Ocultar para todos' : 'Mostrar para todos', 
@@ -276,12 +306,9 @@ async function verificarECriarEscudoMestre() {
     return opts
   }
 
-  function abrirModal(tipo, dados) {
-    setModal({ tipo, dados })
-    setCtxMenu(null)
-  }
-
-  function fecharModal() { setModal(null) }
+  // ============================================
+  // COMPONENTE DE NÓ DA ÁRVORE
+  // ============================================
 
   function RenderNo({ item, depth = 0 }) {
     const cfg = TIPO_ICONE[item.tipo] || TIPO_ICONE.nota
@@ -318,10 +345,16 @@ async function verificarECriarEscudoMestre() {
               autoFocus
               onChange={e => setNomeTemp(e.target.value)}
               onKeyDown={e => {
-                if (e.key === 'Enter') { atualizarItem(item.id, { nome: nomeTemp }); setRenomear(null) }
+                if (e.key === 'Enter') { 
+                  atualizarItem(item.id, { nome: nomeTemp })
+                  setRenomear(null)
+                }
                 if (e.key === 'Escape') setRenomear(null)
               }}
-              onBlur={() => { atualizarItem(item.id, { nome: nomeTemp }); setRenomear(null) }}
+              onBlur={() => {
+                atualizarItem(item.id, { nome: nomeTemp })
+                setRenomear(null)
+              }}
               onClick={e => e.stopPropagation()}
             />
           ) : (
@@ -346,178 +379,106 @@ async function verificarECriarEscudoMestre() {
     )
   }
 
-  function ModalVisualizar({ item, onClose }) {
-    const cfg = TIPO_ICONE[item.tipo]
-    const podeEditar = isGM || item.criado_por === profile.id
-    const [personagemData, setPersonagemData] = useState(null)
-    const [ameacaData, setAmeacaData] = useState(null)
+  // ============================================
+  // MODAIS
+  // ============================================
 
-    useEffect(() => {
-      if (item.tipo === 'personagem' && item.conteudo) {
-        setPersonagemData(item.conteudo)
-      } else if (item.tipo === 'ameaca' && item.conteudo) {
-        setAmeacaData(item.conteudo)
-      }
-    }, [item])
+  function ModalNovaPasta({ parentId, onClose }) {
+    const [nome, setNome] = useState('')
+    const [criando, setCriando] = useState(false)
 
-    if (item.tipo === 'pdf') {
-      return (
-        <div className="modal-visualizar modal-visualizar--pdf" onClick={e => e.target === e.currentTarget && onClose()}>
-          <div className="modal-visualizar__container">
-            <div className="modal-visualizar__header">
-              <h3>{item.nome}</h3>
-              <button onClick={onClose}><FiX /></button>
-            </div>
-            <iframe src={item.url} className="modal-visualizar__pdf" title={item.nome} />
-          </div>
-        </div>
-      )
+    async function handleCriar() {
+      if (!nome.trim() || criando) return
+      setCriando(true)
+      await criarItem('pasta', nome.trim(), parentId)
+      setCriando(false)
+      onClose()
     }
 
-    if (item.tipo === 'imagem') {
-      return (
-        <div className="modal-visualizar modal-visualizar--imagem" onClick={e => e.target === e.currentTarget && onClose()}>
-          <div className="modal-visualizar__container">
-            <div className="modal-visualizar__header">
-              <h3>{item.nome}</h3>
-              <button onClick={onClose}><FiX /></button>
-            </div>
-            <img src={item.url} alt={item.nome} className="modal-visualizar__imagem" />
-          </div>
-        </div>
-      )
+    return (
+      <PopupSimples titulo="Nova Pasta" onClose={onClose} onConfirm={handleCriar} confirmLabel="Criar" loading={criando}>
+        <input className="pp-input" placeholder="Nome da pasta" value={nome} onChange={e => setNome(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCriar()} autoFocus />
+      </PopupSimples>
+    )
+  }
+
+  function ModalNovaNota({ parentId, onClose }) {
+    const [nome, setNome] = useState('')
+    const [criando, setCriando] = useState(false)
+
+    async function handleCriar() {
+      if (!nome.trim() || criando) return
+      setCriando(true)
+      await criarItem('nota', nome.trim(), parentId)
+      setCriando(false)
+      onClose()
     }
 
-    if (item.tipo === 'personagem') {
-      const dados = personagemData || {}
-      const isOwner = item.criado_por === profile.id
-      const showFull = isGM || isOwner
+    return (
+      <PopupSimples titulo="Nova Nota" onClose={onClose} onConfirm={handleCriar} confirmLabel="Criar" loading={criando}>
+        <input className="pp-input" placeholder="Título da nota" value={nome} onChange={e => setNome(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCriar()} autoFocus />
+      </PopupSimples>
+    )
+  }
 
-      return (
-        <div className="modal-visualizar modal-visualizar--personagem" onClick={e => e.target === e.currentTarget && onClose()}>
-          <div className="modal-visualizar__container">
-            <div className="modal-visualizar__header">
-              <h3>{item.nome}</h3>
-              <button onClick={onClose}><FiX /></button>
-            </div>
-            <div className="personagem-visualizacao">
-              <div className="personagem-visualizacao__header">
-                {dados.imagem_url && <img src={dados.imagem_url} alt={item.nome} className="personagem-imagem" />}
-                {dados.token_url && <img src={dados.token_url} alt="Token" className="personagem-token" />}
-              </div>
-              <div className="personagem-visualizacao__stats">
-                <div className="stat">
-                  <span className="stat-label">PV</span>
-                  <span className="stat-value">{showFull ? `${dados.pv_atual || 0}/${dados.pv_max || 0}` : '???'}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">PM</span>
-                  <span className="stat-value">{showFull ? `${dados.pm_atual || 0}/${dados.pm_max || 0}` : '???'}</span>
-                </div>
-                {showFull && (
-                  <>
-                    <div className="stat">
-                      <span className="stat-label">Nível</span>
-                      <span className="stat-value">{dados.nivel_principal || 1}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-label">Classe</span>
-                      <span className="stat-value">{dados.classe_principal || '-'}</span>
-                    </div>
-                  </>
-                )}
-              </div>
-              {showFull && dados.historia && (
-                <div className="personagem-visualizacao__historia">
-                  <h4>História</h4>
-                  <p>{dados.historia}</p>
-                </div>
-              )}
-              {!showFull && <p className="personagem-visualizacao__aviso">Apenas o Mestre e o Jogador podem ver detalhes completos.</p>}
-            </div>
-          </div>
-        </div>
-      )
+  function ModalPersonagem({ parentId, onClose }) {
+    const [nome, setNome] = useState('')
+    const [criando, setCriando] = useState(false)
+
+    async function handleCriar() {
+      if (!nome.trim() || criando) return
+      setCriando(true)
+      await criarItem('personagem', nome.trim(), parentId)
+      setCriando(false)
+      onClose()
     }
 
-    if (item.tipo === 'ameaca') {
-      const dados = ameacaData || {}
+    return (
+      <PopupSimples titulo="Novo Personagem" onClose={onClose} onConfirm={handleCriar} confirmLabel="Criar" loading={criando}>
+        <input className="pp-input" placeholder="Nome do personagem" value={nome} onChange={e => setNome(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCriar()} autoFocus />
+      </PopupSimples>
+    )
+  }
 
-      return (
-        <div className="modal-visualizar modal-visualizar--ameaca" onClick={e => e.target === e.currentTarget && onClose()}>
-          <div className="modal-visualizar__container">
-            <div className="modal-visualizar__header">
-              <h3>{item.nome}</h3>
-              <button onClick={onClose}><FiX /></button>
-            </div>
-            <div className="ameaca-visualizacao">
-              <div className="ameaca-visualizacao__header">
-                {dados.imagem_url && <img src={dados.imagem_url} alt={item.nome} className="ameaca-imagem" />}
-                {dados.token_url && <img src={dados.token_url} alt="Token" className="ameaca-token" />}
-              </div>
-              <div className="ameaca-visualizacao__stats">
-                <div className="stat">
-                  <span className="stat-label">ND</span>
-                  <span className="stat-value">{isGM ? (dados.nd || '-') : '???'}</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">PV</span>
-                  <span className="stat-value">{isGM ? (dados.pv || '???') : '???'}</span>
-                </div>
-                {isGM && (
-                  <>
-                    <div className="stat">
-                      <span className="stat-label">Defesa</span>
-                      <span className="stat-value">{dados.defesa || '-'}</span>
-                    </div>
-                    <div className="stat">
-                      <span className="stat-label">Tamanho</span>
-                      <span className="stat-value">{dados.tamanho || '-'}</span>
-                    </div>
-                  </>
-                )}
-              </div>
-              {!isGM && <p className="ameaca-visualizacao__aviso">Apenas o Mestre pode ver os detalhes completos da ameaça.</p>}
-            </div>
-          </div>
-        </div>
-      )
+  function ModalAmeaca({ parentId, onClose }) {
+    const [nome, setNome] = useState('')
+    const [criando, setCriando] = useState(false)
+
+    async function handleCriar() {
+      if (!nome.trim() || criando) return
+      setCriando(true)
+      await criarItem('ameaca', nome.trim(), parentId)
+      setCriando(false)
+      onClose()
     }
 
-    if (item.tipo === 'nota') {
-      const podeEditarNota = isGM || item.criado_por === profile.id
-      const [conteudo, setConteudo] = useState(item.conteudo?.texto || '')
+    return (
+      <PopupSimples titulo="Nova Ameaça" onClose={onClose} onConfirm={handleCriar} confirmLabel="Criar" loading={criando}>
+        <input className="pp-input" placeholder="Nome da ameaça" value={nome} onChange={e => setNome(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleCriar()} autoFocus />
+      </PopupSimples>
+    )
+  }
 
-      const salvarNota = async () => {
-        await atualizarItem(item.id, { conteudo: { ...item.conteudo, texto: conteudo } })
-      }
+  function ModalConfirmarExcluir({ item, onClose }) {
+    const [excluindoLocal, setExcluindoLocal] = useState(false)
 
-      return (
-        <div className="modal-visualizar modal-visualizar--nota" onClick={e => e.target === e.currentTarget && onClose()}>
-          <div className="modal-visualizar__container">
-            <div className="modal-visualizar__header">
-              <h3>{item.nome}</h3>
-              <button onClick={onClose}><FiX /></button>
-            </div>
-            <div className="nota-visualizacao">
-              {podeEditarNota ? (
-                <textarea
-                  className="nota-editor"
-                  value={conteudo}
-                  onChange={e => setConteudo(e.target.value)}
-                  onBlur={salvarNota}
-                  placeholder="Escreva sua nota aqui..."
-                />
-              ) : (
-                <p className="nota-conteudo">{conteudo || 'Sem conteúdo'}</p>
-              )}
-            </div>
-          </div>
-        </div>
-      )
+    async function handleExcluir() {
+      if (excluindoLocal) return
+      setExcluindoLocal(true)
+      await excluirItem(item.id)
+      setExcluindoLocal(false)
+      onClose()
     }
 
-    return null
+    return (
+      <PopupSimples titulo="Confirmar exclusão" onClose={onClose} onConfirm={handleExcluir} confirmLabel={excluindoLocal ? "Excluindo..." : "Excluir"} danger>
+        <div className="pp-excluir">
+          <FiAlertTriangle size={28} style={{ color: '#CC2222' }} />
+          <p>Tem certeza que deseja excluir <strong>"{item.nome}"</strong>?</p>
+          <p className="pp-aviso">Esta ação não pode ser desfeita!</p>
+        </div>
+      </PopupSimples>
+    )
   }
 
   function ModalMoverItem({ item, onClose }) {
@@ -567,6 +528,292 @@ async function verificarECriarEscudoMestre() {
     )
   }
 
+  // ============================================
+  // MODAL DE VISUALIZAÇÃO
+  // ============================================
+
+  function ModalVisualizar({ item, onClose }) {
+  const [conteudo, setConteudo] = useState(item.conteudo?.texto || '')
+  const [imagemExpandida, setImagemExpandida] = useState(null)
+  const podeEditar = isGM || item.criado_por === profile.id
+
+  async function salvarNota() {
+    if (item.tipo === 'nota') {
+      await atualizarItem(item.id, { conteudo: { ...item.conteudo, texto: conteudo } })
+    }
+  }
+
+  // PDF
+  if (item.tipo === 'pdf') {
+    return (
+      <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="modal-visualizar__container">
+          <div className="modal-visualizar__header">
+            <h3>{item.nome}</h3>
+            <button onClick={onClose}><FiX /></button>
+          </div>
+          <iframe src={item.url} className="modal-visualizar__pdf" title={item.nome} />
+        </div>
+      </div>
+    )
+  }
+
+  // Imagem
+  if (item.tipo === 'imagem') {
+    return (
+      <>
+        <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-visualizar__container modal-visualizar__container--imagem">
+            <div className="modal-visualizar__header">
+              <h3>{item.nome}</h3>
+              <button onClick={onClose}><FiX /></button>
+            </div>
+            <img 
+              src={item.url} 
+              alt={item.nome} 
+              className="modal-visualizar__imagem"
+              onClick={() => setImagemExpandida(item.url)}
+              style={{ cursor: 'pointer' }}
+            />
+          </div>
+        </div>
+        {imagemExpandida && (
+          <ImageViewer 
+            src={imagemExpandida} 
+            alt={item.nome} 
+            onClose={() => setImagemExpandida(null)} 
+          />
+        )}
+      </>
+    )
+  }
+
+  // Nota
+  if (item.tipo === 'nota') {
+    return (
+      <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
+        <div className="modal-visualizar__container">
+          <div className="modal-visualizar__header">
+            <h3>{item.nome}</h3>
+            <button onClick={onClose}><FiX /></button>
+          </div>
+          <div className="nota-visualizacao">
+            {podeEditar ? (
+              <textarea
+                className="nota-editor"
+                value={conteudo}
+                onChange={e => setConteudo(e.target.value)}
+                onBlur={salvarNota}
+                placeholder="Escreva sua nota aqui..."
+              />
+            ) : (
+              <div className="nota-conteudo">{conteudo || 'Sem conteúdo'}</div>
+            )}
+          </div>
+        </div>
+      </div>
+    )
+  }
+
+  // Personagem - VERSÃO SIMPLIFICADA
+  if (item.tipo === 'personagem') {
+    const dados = item.conteudo || {}
+    const isOwner = item.criado_por === profile.id
+    const showFull = isGM || isOwner
+
+    return (
+      <>
+        <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-visualizar__container modal-visualizar__container--personagem">
+            <div className="modal-visualizar__header">
+              <h3>{dados.nome || item.nome}</h3>
+              <button onClick={onClose}><FiX /></button>
+            </div>
+            
+            <div className="personagem-visualizacao-simplificado">
+              {/* Imagens */}
+              <div className="personagem-imagens-simplificado">
+                {dados.imagem_url && (
+                  <div className="personagem-img-wrapper">
+                    <img 
+                      src={dados.imagem_url} 
+                      alt="Personagem" 
+                      className="personagem-imagem-simplificado"
+                      onClick={() => setImagemExpandida(dados.imagem_url)}
+                    />
+                    <button 
+                      className="img-zoom-btn"
+                      onClick={() => setImagemExpandida(dados.imagem_url)}
+                    >
+                      🔍
+                    </button>
+                  </div>
+                )}
+                {dados.token_url && (
+                  <div className="personagem-img-wrapper">
+                    <img 
+                      src={dados.token_url} 
+                      alt="Token" 
+                      className="personagem-token-simplificado"
+                      onClick={() => setImagemExpandida(dados.token_url)}
+                    />
+                    <button 
+                      className="img-zoom-btn"
+                      onClick={() => setImagemExpandida(dados.token_url)}
+                    >
+                      🔍
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Informações básicas */}
+              <div className="personagem-info-simplificado">
+                <div className="info-row">
+                  <span className="label">Raça:</span>
+                  <span className="value">{dados.raca || '-'}</span>
+                </div>
+                <div className="info-row">
+                  <span className="label">Classe:</span>
+                  <span className="value">
+                    {showFull ? (dados.classes?.map(c => `${c.nome} ${c.nivel}`).join(', ') || '-') : '???'}
+                  </span>
+                </div>
+              </div>
+
+              {/* Stats principais */}
+              <div className="stats-simplificado">
+                <div className="stat-simplificado">
+                  <span className="stat-label">❤️ PV</span>
+                  <span className="stat-value">{showFull ? `${dados.pv_atual || 0}/${dados.pv_max || 0}` : '???'}</span>
+                </div>
+                <div className="stat-simplificado">
+                  <span className="stat-label">💙 PM</span>
+                  <span className="stat-value">{showFull ? `${dados.pm_atual || 0}/${dados.pm_max || 0}` : '???'}</span>
+                </div>
+                <div className="stat-simplificado">
+                  <span className="stat-label">🛡️ Defesa</span>
+                  <span className="stat-value">{showFull ? (dados.defesa?.total || '-') : '???'}</span>
+                </div>
+              </div>
+
+              {!showFull && (
+                <p className="aviso-simplificado">
+                  🔒 Apenas o Mestre e o Jogador podem ver detalhes completos.
+                </p>
+              )}
+            </div>
+
+            <button className="edit-personagem-btn" onClick={() => { onClose(); setEditandoPersonagem(item); }}>
+              <FiEdit2 /> Editar Personagem
+            </button>
+          </div>
+        </div>
+        
+        {imagemExpandida && (
+          <ImageViewer 
+            src={imagemExpandida} 
+            alt="Imagem do personagem" 
+            onClose={() => setImagemExpandida(null)} 
+          />
+        )}
+      </>
+    )
+  }
+
+  // Ameaça - VERSÃO SIMPLIFICADA
+  if (item.tipo === 'ameaca') {
+    const dados = item.conteudo || {}
+
+    return (
+      <>
+        <div className="modal-visualizar" onClick={e => e.target === e.currentTarget && onClose()}>
+          <div className="modal-visualizar__container modal-visualizar__container--ameaca">
+            <div className="modal-visualizar__header">
+              <h3>{dados.nome || item.nome}</h3>
+              <button onClick={onClose}><FiX /></button>
+            </div>
+            
+            <div className="ameaca-visualizacao-simplificado">
+              {/* Imagens */}
+              <div className="ameaca-imagens-simplificado">
+                {dados.imagem_url && (
+                  <div className="ameaca-img-wrapper">
+                    <img 
+                      src={dados.imagem_url} 
+                      alt="Ameaça" 
+                      className="ameaca-imagem-simplificado"
+                      onClick={() => setImagemExpandida(dados.imagem_url)}
+                    />
+                    <button 
+                      className="img-zoom-btn"
+                      onClick={() => setImagemExpandida(dados.imagem_url)}
+                    >
+                      🔍
+                    </button>
+                  </div>
+                )}
+                {dados.token_url && (
+                  <div className="ameaca-img-wrapper">
+                    <img 
+                      src={dados.token_url} 
+                      alt="Token" 
+                      className="ameaca-token-simplificado"
+                      onClick={() => setImagemExpandida(dados.token_url)}
+                    />
+                    <button 
+                      className="img-zoom-btn"
+                      onClick={() => setImagemExpandida(dados.token_url)}
+                    >
+                      🔍
+                    </button>
+                  </div>
+                )}
+              </div>
+
+              {/* Stats principais */}
+              <div className="stats-simplificado">
+                <div className="stat-simplificado">
+                  <span className="stat-label">ND</span>
+                  <span className="stat-value">{isGM ? (dados.nd || '-') : '???'}</span>
+                </div>
+                <div className="stat-simplificado">
+                  <span className="stat-label">❤️ PV</span>
+                  <span className="stat-value">{isGM ? (dados.pv || '???') : '???'}</span>
+                </div>
+                <div className="stat-simplificado">
+                  <span className="stat-label">🛡️ Defesa</span>
+                  <span className="stat-value">{isGM ? (dados.defesa || '-') : '???'}</span>
+                </div>
+              </div>
+
+              {!isGM && (
+                <p className="aviso-simplificado">
+                  🔒 Apenas o Mestre pode ver os detalhes completos da ameaça.
+                </p>
+              )}
+            </div>
+          </div>
+        </div>
+        
+        {imagemExpandida && (
+          <ImageViewer 
+            src={imagemExpandida} 
+            alt="Imagem da ameaça" 
+            onClose={() => setImagemExpandida(null)} 
+          />
+        )}
+      </>
+    )
+  }
+
+  return null
+}
+
+  // ============================================
+  // RENDER PRINCIPAL
+  // ============================================
+
   const raiz = filhosDirectos(null)
 
   return (
@@ -576,8 +823,7 @@ async function verificarECriarEscudoMestre() {
           <FiFolder size={14} /> Arquivos
         </span>
         <div className="pastas-header__actions">
-          <AddDropdown isGM={isGM} pdfRef={pdfRef} imgRef={imgRef}
-            onAction={(tipo, parentId) => abrirModal(tipo, parentId)} />
+          <AddDropdown isGM={isGM} pdfRef={pdfRef} imgRef={imgRef} onAction={abrirModal} />
         </div>
       </div>
 
@@ -595,20 +841,17 @@ async function verificarECriarEscudoMestre() {
         )}
       </div>
 
-      <input ref={pdfRef} type="file" accept=".pdf" style={{ display: 'none' }}
-        onChange={e => handleUpload(e, 'pdf', modal?.dados || null)} />
-      <input ref={imgRef} type="file" accept="image/*" style={{ display: 'none' }}
-        onChange={e => handleUpload(e, 'imagem', modal?.dados || null)} />
+      <input ref={pdfRef} type="file" accept=".pdf" style={{ display: 'none' }} onChange={e => handleUpload(e, 'pdf', modal?.dados)} />
+      <input ref={imgRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleUpload(e, 'imagem', modal?.dados)} />
 
       {ctxMenu && (
         <div className="ctx-menu" style={{ top: ctxMenu.y, left: ctxMenu.x }}>
-          {opcoesCtx(ctxMenu.alvo).map((opt, i) =>
+          {opcoesCtx(ctxMenu.alvo).map((opt, i) => (
             opt.sep ? <div key={i} className="ctx-sep" /> :
-            <button key={i} className={`ctx-item ${opt.danger ? 'ctx-item--danger' : ''}`}
-              onClick={() => { opt.acao(); setCtxMenu(null) }}>
+            <button key={i} className={`ctx-item ${opt.danger ? 'ctx-item--danger' : ''}`} onClick={() => { opt.acao(); setCtxMenu(null) }}>
               <opt.icon size={13} /> {opt.label}
             </button>
-          )}
+          ))}
         </div>
       )}
 
@@ -620,61 +863,46 @@ async function verificarECriarEscudoMestre() {
       {modal?.tipo === 'personagem' && <ModalPersonagem parentId={modal.dados} onClose={fecharModal} />}
       {modal?.tipo === 'ameaca' && <ModalAmeaca parentId={modal.dados} onClose={fecharModal} />}
       {modal?.tipo === 'confirmar-excluir' && <ModalConfirmarExcluir item={modal.dados} onClose={fecharModal} />}
+
+      {editandoPersonagem && (
+        // Quando salvar, atualiza o item na lista sem recarregar a página
+        <PersonagemEditor 
+          personagem={editandoPersonagem}
+          mesaId={mesaId}
+          profile={profile}
+          onClose={() => setEditandoPersonagem(null)}
+          onSave={(updatedPersonagem) => {
+            // Atualizar na lista de itens
+            setItens(prev => prev.map(item => {
+              if (item.id === updatedPersonagem.id || item.id === editandoPersonagem?.id) {
+                return {
+                  ...item,
+                  nome: updatedPersonagem.nome,
+                  conteudo: updatedPersonagem
+                }
+              }
+              return item
+            }))
+            setEditandoPersonagem(null)
+          }}
+        />
+      )}
     </div>
   )
 }
 
-// Modais simplificados...
-function ModalNovaPasta({ parentId, onClose }) {
-  const [nome, setNome] = useState('')
-  return (
-    <PopupSimples titulo="Nova Pasta" onClose={onClose} onConfirm={() => {}} confirmLabel="Criar">
-      <input className="pp-input" placeholder="Nome da pasta" value={nome} onChange={e => setNome(e.target.value)} autoFocus />
-    </PopupSimples>
-  )
-}
-
-function ModalNovaNota({ parentId, onClose }) {
-  const [nome, setNome] = useState('')
-  return (
-    <PopupSimples titulo="Nova Nota" onClose={onClose} onConfirm={() => {}} confirmLabel="Criar">
-      <input className="pp-input" placeholder="Título da nota" value={nome} onChange={e => setNome(e.target.value)} autoFocus />
-    </PopupSimples>
-  )
-}
-
-function ModalPersonagem({ parentId, onClose }) {
-  const [nome, setNome] = useState('')
-  return (
-    <PopupSimples titulo="Novo Personagem" onClose={onClose} onConfirm={() => {}} confirmLabel="Criar">
-      <input className="pp-input" placeholder="Nome do personagem" value={nome} onChange={e => setNome(e.target.value)} autoFocus />
-    </PopupSimples>
-  )
-}
-
-function ModalAmeaca({ parentId, onClose }) {
-  const [nome, setNome] = useState('')
-  return (
-    <PopupSimples titulo="Nova Ameaça" onClose={onClose} onConfirm={() => {}} confirmLabel="Criar">
-      <input className="pp-input" placeholder="Nome da ameaça" value={nome} onChange={e => setNome(e.target.value)} autoFocus />
-    </PopupSimples>
-  )
-}
-
-function ModalConfirmarExcluir({ item, onClose }) {
-  return (
-    <PopupSimples titulo="Confirmar exclusão" onClose={onClose} onConfirm={() => {}} confirmLabel="Excluir" danger>
-      <p>Excluir "{item.nome}" permanentemente?</p>
-    </PopupSimples>
-  )
-}
+// ============================================
+// COMPONENTES AUXILIARES
+// ============================================
 
 function AddDropdown({ isGM, onAction, pdfRef, imgRef }) {
   const [open, setOpen] = useState(false)
   const ref = useRef(null)
 
   useEffect(() => {
-    function handleClick(e) { if (!ref.current?.contains(e.target)) setOpen(false) }
+    function handleClick(e) {
+      if (!ref.current?.contains(e.target)) setOpen(false)
+    }
     document.addEventListener('mousedown', handleClick)
     return () => document.removeEventListener('mousedown', handleClick)
   }, [])
@@ -706,7 +934,113 @@ function AddDropdown({ isGM, onAction, pdfRef, imgRef }) {
   )
 }
 
-function PopupSimples({ titulo, children, onClose, onConfirm, confirmLabel = 'Confirmar', danger = false }) {
+// ============================================
+// VISUALIZADOR DE IMAGEM COM ZOOM - CORRIGIDO
+// ============================================
+
+function ImageViewer({ src, alt, onClose }) {
+  const [zoom, setZoom] = useState(1)
+  const [position, setPosition] = useState({ x: 0, y: 0 })
+  const [isDragging, setIsDragging] = useState(false)
+  const [dragStart, setDragStart] = useState({ x: 0, y: 0 })
+  const [imgDimensions, setImgDimensions] = useState({ width: 0, height: 0 })
+  const containerRef = useRef(null)
+  const imgRef = useRef(null)
+
+  const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.25, 3))
+  const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.25, 0.5))
+  
+  const handleReset = () => {
+    setZoom(1)
+    setPosition({ x: 0, y: 0 })
+  }
+
+  const handleMouseDown = (e) => {
+    if (zoom > 1) {
+      setIsDragging(true)
+      setDragStart({ x: e.clientX - position.x, y: e.clientY - position.y })
+    }
+  }
+
+  const handleMouseMove = (e) => {
+    if (isDragging && zoom > 1) {
+      setPosition({
+        x: e.clientX - dragStart.x,
+        y: e.clientY - dragStart.y
+      })
+    }
+  }
+
+  const handleMouseUp = () => {
+    setIsDragging(false)
+  }
+
+  // Carregar a imagem e centralizar
+  useEffect(() => {
+    const img = new Image()
+    img.onload = () => {
+      setImgDimensions({ width: img.width, height: img.height })
+    }
+    img.src = src
+  }, [src])
+
+  useEffect(() => {
+    document.addEventListener('mousemove', handleMouseMove)
+    document.addEventListener('mouseup', handleMouseUp)
+    return () => {
+      document.removeEventListener('mousemove', handleMouseMove)
+      document.removeEventListener('mouseup', handleMouseUp)
+    }
+  }, [isDragging, dragStart])
+
+  // Impedir scroll da página quando o modal está aberto
+  useEffect(() => {
+    document.body.style.overflow = 'hidden'
+    return () => {
+      document.body.style.overflow = 'unset'
+    }
+  }, [])
+
+  return (
+    <div className="image-viewer-overlay" onClick={onClose}>
+      <div className="image-viewer" onClick={e => e.stopPropagation()}>
+        <div className="image-viewer__header">
+          <span>{alt || 'Imagem'}</span>
+          <div className="image-viewer__controls">
+            <button onClick={handleZoomOut} title="Reduzir">−</button>
+            <span>{Math.round(zoom * 100)}%</span>
+            <button onClick={handleZoomIn} title="Ampliar">+</button>
+            <button onClick={handleReset} title="Resetar">⟳</button>
+            <button onClick={onClose} title="Fechar"><FiX /></button>
+          </div>
+        </div>
+        <div 
+          ref={containerRef}
+          className="image-viewer__container"
+          onMouseDown={handleMouseDown}
+          style={{ cursor: zoom > 1 ? (isDragging ? 'grabbing' : 'grab') : 'default' }}
+        >
+          <div className="image-viewer__image-wrapper">
+            <img 
+              ref={imgRef}
+              src={src} 
+              alt={alt}
+              className="image-viewer__image"
+              style={{ 
+                transform: `scale(${zoom})`,
+                marginLeft: `${position.x}px`,
+                marginTop: `${position.y}px`
+              }}
+              draggable={false}
+            />
+          </div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function PopupSimples({ titulo, children, onClose, onConfirm, confirmLabel = 'Confirmar', danger = false, loading = false }) {
   return (
     <div className="pp-overlay" onClick={e => e.target === e.currentTarget && onClose()}>
       <div className="pp-box">
@@ -717,8 +1051,8 @@ function PopupSimples({ titulo, children, onClose, onConfirm, confirmLabel = 'Co
         <div className="pp-body">{children}</div>
         <div className="pp-footer">
           <button className="pp-btn pp-btn--ghost" onClick={onClose}>Cancelar</button>
-          <button className={`pp-btn ${danger ? 'pp-btn--danger' : 'pp-btn--confirm'}`} onClick={onConfirm}>
-            {confirmLabel}
+          <button className={`pp-btn ${danger ? 'pp-btn--danger' : 'pp-btn--confirm'}`} onClick={onConfirm} disabled={loading}>
+            {loading ? '...' : confirmLabel}
           </button>
         </div>
       </div>
