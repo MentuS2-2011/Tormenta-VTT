@@ -1,4 +1,5 @@
 import { paladino } from './paladino'
+import { santo } from './santo'
 
 export const classesData = [
   {
@@ -2859,5 +2860,6 @@ export const classesData = [
       }
     ]
   },
-  paladino
+  paladino,
+  santo
 ];
