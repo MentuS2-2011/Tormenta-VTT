@@ -13,6 +13,7 @@ import { treinador } from './classes/treinador'
 import { inovador } from './classes/inovador'
 import { ladino } from './classes/ladino'
 import { vassalo } from './classes/vassalo'
+import { comandante } from './classes/comandante'
 
 export const classesData = [
   guerreiro,
@@ -20,6 +21,7 @@ export const classesData = [
   barbaro,
   nobre, 
   burgues,
+  comandante,
   arcanista,
   inventor,
   alquimista,
