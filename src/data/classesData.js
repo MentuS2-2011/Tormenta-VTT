@@ -284,6 +284,18 @@ export const classesData = [
       {
         "nome": "Golpe Pessoal",
         "descricao": "Quando faz um ataque, você pode desferir seu Golpe Pessoal, uma técnica única com efeitos determinados por você. Você constrói seu Golpe Pessoal escolhendo efeitos da lista abaixo — a soma dos custos será o custo do Golpe Pessoal (mínimo 1 PM). O Golpe Pessoal só pode ser usado com uma arma específica. Pré-requisito: 5º nível de guerreiro.\n\nEfeitos disponíveis:\n• Amplo (+3 PM): Atinge todas as criaturas em alcance curto.\n• Atordoante (+2 PM): Criatura atingida fica atordoada por uma rodada (Fort CD For anula).\n• Brutal (+1 PM): Fornece um dado extra de dano do mesmo tipo.\n• Conjurador (Custo da Magia +1 PM): Lança uma magia de 1º ou 2º círculo ao acertar.\n• Destruidor (+2 PM): Aumenta o multiplicador de crítico em +1.\n• Distante (+1 PM): Aumenta o alcance em um passo.\n• Elemental (+2 PM): Causa +2d6 de dano de ácido, eletricidade, fogo ou frio.\n• Impactante (+1 PM): Empurra o alvo 1,5m para cada 10 pontos de dano.\n• Letal (+2 PM): Aumenta a margem de ameaça em +2 (pode escolher duas vezes: +5).\n• Penetrante (+1 PM): Ignora 10 pontos de RD.\n• Preciso (+1 PM): Rola dois dados no teste de ataque e usa o melhor.\n• Qualquer Arma (+1 PM): Pode usar com qualquer tipo de arma.\n• Ricocheteante (+1 PM): A arma retorna após o ataque (apenas arremesso).\n• Teleguiado (+1 PM): Ignora penalidades por camuflagem ou cobertura leves.\n• Avanço (+1 PM): Percorre até o deslocamento em linha reta antes do golpe.\n• Brando (+0 PM): Causa dano não letal.\n• Carregado (+1 PM): Gasta ação padrão para energizar; causa +2d8 no próximo ataque.\n• Sequencial (+2 PM): Causa +1d6; aumenta um passo a cada acerto na mesma cena.\n• Sifão (+2 PM): Recebe 1 PM temporário para cada 10 pontos de dano (máx. seu nível/cena).\n• Lento (–2 PM): Exige ação completa para ser usado.\n• Perto da Morte (–2 PM): Só pode ser usado com ¼ dos PV ou menos.\n• Sacrifício (–2 PM): Perde 10 PV sempre que usa o golpe.\n• Golpe de Abertura (–2 PM): Só pode ser usado no primeiro turno do combate.\n• Truque Secreto (–2 PM): Só pode ser usado uma vez contra cada alvo por cena."
+      },
+      {
+        "nome": "Estilo Clássico - DB 212 -",
+        "descricao": "Um clichê só é clichê porque funciona! Quando usa Ataque Especial, se estiver empunhando um escudo e uma espada longa, você recebe +2 na Defesa e em rolagens de dano até o início do seu próximo turno. Pré-requisitos: humano, Estilo de Arma e Escudo.",
+      },
+      {
+        "nome": "Duro Como Aço - DB 212 -",
+        "descricao": "Você vem de uma linhagem de anões da infantaria. Se estiver usando armadura pesada, você pode somar sua Constituição na Defesa, limitado pelo seu nível. Se fizer isso, não pode somar sua Destreza, mesmo que outras habilidades ou efeitos o façam. Pré-requisitos: anão, Encouraçado, 8º nível de guerreiro.",
+      },
+      {
+        "nome": "Herdeiro dos Gigantes - DB 212 -",
+        "descricao": "Poucos são capazes de equiparar sua força. Quando usa Ataque Especial e Força dos Titãs em um mesmo ataque, você aumenta o dano extra conce- dido por Força dos Titãs em +1d12. Pré-requisito: galokk.",
       }
     ]
   },
@@ -557,7 +569,19 @@ export const classesData = [
       {
         "nome": "Sede Sanguinária",
         "descricao": "Enquanto está em fúria, quando faz um acerto crítico ou reduz um inimigo a 0 PV ou menos, você recupera 10 PV e 2 PM. Pré-requisitos: Sangue dos Inimigos, 5º nível de bárbaro."
-      }
+      },
+      {
+        "nome": "Fúria do Gigante - DB 212 -",
+        "descricao": "Quando você entra em Fúria, inimigos em alcance curto ficam abalados por 1d4 rodadas (Von CD Con reduz para abalado por 1 rodada). Pré-requisito: galokk ou ogro.",
+      },
+      {
+        "nome": "Fúria Primordial - DB 212 -",
+        "descricao": "Quando está em Fúria, o bônus de dano com armas corpo a corpo e de arremesso concedido pela habilidade Feroz aumenta em +2. Quando sofre dano de um inimigo, esse aumento se torna +4 até o fim de seu próximo turno. Pré-requisito: orc.",
+      },
+      {
+        "nome": "Fúria Trog - DB 212 -",
+        "descricao": "Trogs, por natureza, sabem ceder particularmente bem à ira animalesca. Quando está em Fúria você pode, um vez por rodada, fazer um ataque corpo a corpo extra com sua Mordida sem gastar PM. Pré-requisito: trog.",
+      },
     ]
   },
   {
@@ -838,6 +862,18 @@ export const classesData = [
       {
         "nome": "Voz Límpida",
         "descricao": "Quando você usa uma habilidade de nobre que afete um ou mais aliados, o custo dessa habilidade diminui em –1 PM (isso não reduz efeitos baseados no custo em PM pago)."
+      },
+      {
+        "nome": "Abundância dos Pequeninos - DB 212 -",
+        "descricao": "Você vem de uma família abastada de hynne. Quando faz o teste de Carisma para sua habilidade Riqueza, você pode somar 1d6 ao resultado do teste. Pré-requisitos: hynne, 3º nível de nobre.",
+      },
+      {
+        "nome": "Inspirar Medo - DB 212 -",
+        "descricao": "Sua ascendência monstruosa causa pavor nos ignorantes. Você pode gastar uma ação de movimento e 1 PM para esbravejar impropérios aos seus inimigos. Faça um teste de Intimidação oposto pelo teste de Vontade de cada criatura a sua escolha em alcance curto (você faz um único teste). Alvos que falhem ficam abalados até o início do seu próximo turno. Pré-requisitos: bugbear ou medusa, Inspirar Confiança.",
+      },
+      {
+        "nome": "Mestra dos Sussurros - DB 212 -",
+        "descricao": "Suas cobras assustam ou atraem seus colegas da aristocracia. Você também pode usar Jogo da Corte em testes de Intimidação e, quando usa esta habilidade em alguma de suas perícias, a segunda rolagem do teste é feita com +2. Pré-requisitos: medusa, Jogo da Corte.",
       }
     ]
   },
@@ -1123,6 +1159,18 @@ export const classesData = [
       {
         "nome": "Voz Límpida",
         "descricao": "Quando você usa uma habilidade de nobre que afete um ou mais aliados, o custo dessa habilidade diminui em –1 PM (isso não reduz efeitos baseados no custo em PM pago)."
+      },
+      {
+        "nome": "Abundância dos Pequeninos - DB 212 -",
+        "descricao": "Você vem de uma família abastada de hynne. Quando faz o teste de Carisma para sua habilidade Riqueza, você pode somar 1d6 ao resultado do teste. Pré-requisitos: hynne, 3º nível de nobre.",
+      },
+      {
+        "nome": "Inspirar Medo - DB 212 -",
+        "descricao": "Sua ascendência monstruosa causa pavor nos ignorantes. Você pode gastar uma ação de movimento e 1 PM para esbravejar impropérios aos seus inimigos. Faça um teste de Intimidação oposto pelo teste de Vontade de cada criatura a sua escolha em alcance curto (você faz um único teste). Alvos que falhem ficam abalados até o início do seu próximo turno. Pré-requisitos: bugbear ou medusa, Inspirar Confiança.",
+      },
+      {
+        "nome": "Mestra dos Sussurros - DB 212 -",
+        "descricao": "Suas cobras assustam ou atraem seus colegas da aristocracia. Você também pode usar Jogo da Corte em testes de Intimidação e, quando usa esta habilidade em alguma de suas perícias, a segunda rolagem do teste é feita com +2. Pré-requisitos: medusa, Jogo da Corte.",
       }
     ]
   },
@@ -1400,6 +1448,18 @@ export const classesData = [
       {
         "nome": "Transliteração Impossível",
         "descricao": "Quando usa um pergaminho de uma magia que conheça, você recebe +2 PM para gastar em aprimoramentos e a magia não pode ser anulada por contramágica. Pré-requisito: Escriba Arcano."
+      },
+      {
+        "nome": "Encanto Feérico - DB 212 -",
+        "descricao": "Escolha uma das suas magias de encantamento de 1º círculo. Uma vez por cena, você pode lançar a versão básica desta magia sem custo em PM (você ainda pode gastar PM para aprimorá-la). Pré-requisitos: eiradaan, qareen ou sílfide."
+      },
+      {
+        "nome": "Familiar Elemental - DB 212 -",
+        "descricao": "Se seu familiar tiver o mesmo elemento da sua Resistência Elemental, a redução de dano recebida por essa habilidade aumenta para 15. Pré-requisitos: qareen; um Familiar aquin’ne, paak, terrier ou t’peel; 5º nível de arcanista.",
+      },
+      {
+        "nome": "Herança Erudita - DB 212 -",
+        "descricao": "Seu sangue não carrega apenas a fagulha arcana que lhe dá poder, mas o conhecimento do dragão ou criatura feérica de quem você descende. Escolha uma perícia de Inteligência. Você soma seu Carisma nos testes dessa perícia. Pré-requisitos: eiradaan, kallyanach ou sílfide, Feiticeiro.",
       }
     ]
   },
@@ -1737,6 +1797,14 @@ export const classesData = [
       {
         "nome": "Saraivada Alquímica",
         "descricao": "Quando usa um preparado alquímico ou uma poção de dano, você pode gastar 2 PM e uma dose extra do mesmo item para aumentar o dano causado em 50%. Pré-requisitos: Granadeiro, 7º nível de inventor."
+      },
+      {
+        "nome": "Armadura de Suporte - DB 212 -",
+        "descricao": "Se estiver usando armadura pesada, você pode gastar 1 PM para ignorar o dano adicional que sofreria por conta da habilidade Ossos Frágeis. Pré-requisitos: kliren, Couraceiro.",
+      },
+      {
+        "nome": "Síntese Goblin - DB 212 -",
+        "descricao": "Quando fabrica um item alquímico ou poção, você pode fabricar uma dose a mais (pagando metade do seu custo em matéria-prima); mas o item é feito de forma rápida e desleixada; ao ser usado, tem 25% de chance (1 em 1d4) de não surtir efeito. Pré-requisitos: goblin, Síntese Alquímica.",
       }
     ]
   },
@@ -2070,6 +2138,14 @@ export const classesData = [
       {
         "nome": "Síntese Rápida",
         "descricao": "Quando fabrica um item alquímico ou poção, você pode fabricar o dobro de doses no mesmo tempo (pagando o custo de matéria-prima de cada uma). Pré-requisito: Alquimista Iniciado."
+      },
+      {
+        "nome": "Armadura de Suporte - DB 212 -",
+        "descricao": "Se estiver usando armadura pesada, você pode gastar 1 PM para ignorar o dano adicional que sofreria por conta da habilidade Ossos Frágeis. Pré-requisitos: kliren, Couraceiro.",
+      },
+      {
+        "nome": "Síntese Goblin - DB 212 -",
+        "descricao": "Quando fabrica um item alquímico ou poção, você pode fabricar uma dose a mais (pagando metade do seu custo em matéria-prima); mas o item é feito de forma rápida e desleixada; ao ser usado, tem 25% de chance (1 em 1d4) de não surtir efeito. Pré-requisitos: goblin, Síntese Alquímica.",
       }
     ]
   },
@@ -2560,6 +2636,18 @@ export const classesData = [
       {
         "nome": "Golpe Pessoal",
         "descricao": "Quando faz um ataque, você pode desferir seu Golpe Pessoal, uma técnica única com efeitos determinados por você. Você constrói seu Golpe Pessoal escolhendo efeitos da lista abaixo — a soma dos custos será o custo do Golpe Pessoal (mínimo 1 PM). O Golpe Pessoal só pode ser usado com uma arma específica. Pré-requisito: 5º nível de guerreiro.\n\nEfeitos disponíveis:\n• Amplo (+3 PM): Atinge todas as criaturas em alcance curto.\n• Atordoante (+2 PM): Criatura atingida fica atordoada por uma rodada (Fort CD For anula).\n• Brutal (+1 PM): Fornece um dado extra de dano do mesmo tipo.\n• Conjurador (Custo da Magia +1 PM): Lança uma magia de 1º ou 2º círculo ao acertar.\n• Destruidor (+2 PM): Aumenta o multiplicador de crítico em +1.\n• Distante (+1 PM): Aumenta o alcance em um passo.\n• Elemental (+2 PM): Causa +2d6 de dano de ácido, eletricidade, fogo ou frio.\n• Impactante (+1 PM): Empurra o alvo 1,5m para cada 10 pontos de dano.\n• Letal (+2 PM): Aumenta a margem de ameaça em +2 (pode escolher duas vezes: +5).\n• Penetrante (+1 PM): Ignora 10 pontos de RD.\n• Preciso (+1 PM): Rola dois dados no teste de ataque e usa o melhor.\n• Qualquer Arma (+1 PM): Pode usar com qualquer tipo de arma.\n• Ricocheteante (+1 PM): A arma retorna após o ataque (apenas arremesso).\n• Teleguiado (+1 PM): Ignora penalidades por camuflagem ou cobertura leves.\n• Avanço (+1 PM): Percorre até o deslocamento em linha reta antes do golpe.\n• Brando (+0 PM): Causa dano não letal.\n• Carregado (+1 PM): Gasta ação padrão para energizar; causa +2d8 no próximo ataque.\n• Sequencial (+2 PM): Causa +1d6; aumenta um passo a cada acerto na mesma cena.\n• Sifão (+2 PM): Recebe 1 PM temporário para cada 10 pontos de dano (máx. seu nível/cena).\n• Lento (–2 PM): Exige ação completa para ser usado.\n• Perto da Morte (–2 PM): Só pode ser usado com ¼ dos PV ou menos.\n• Sacrifício (–2 PM): Perde 10 PV sempre que usa o golpe.\n• Golpe de Abertura (–2 PM): Só pode ser usado no primeiro turno do combate.\n• Truque Secreto (–2 PM): Só pode ser usado uma vez contra cada alvo por cena."
+      },
+      {
+        "nome": "Estilo Clássico - DB 212 -",
+        "descricao": "Um clichê só é clichê porque funciona! Quando usa Ataque Especial, se estiver empunhando um escudo e uma espada longa, você recebe +2 na Defesa e em rolagens de dano até o início do seu próximo turno. Pré-requisitos: humano, Estilo de Arma e Escudo.",
+      },
+      {
+        "nome": "Duro Como Aço - DB 212 -",
+        "descricao": "Você vem de uma linhagem de anões da infantaria. Se estiver usando armadura pesada, você pode somar sua Constituição na Defesa, limitado pelo seu nível. Se fizer isso, não pode somar sua Destreza, mesmo que outras habilidades ou efeitos o façam. Pré-requisitos: anão, Encouraçado, 8º nível de guerreiro.",
+      },
+      {
+        "nome": "Herdeiro dos Gigantes - DB 212 -",
+        "descricao": "Poucos são capazes de equiparar sua força. Quando usa Ataque Especial e Força dos Titãs em um mesmo ataque, você aumenta o dano extra conce- dido por Força dos Titãs em +1d12. Pré-requisito: galokk.",
       }
     ]
   },
@@ -2857,6 +2945,18 @@ export const classesData = [
       {
         "nome": "Ameaça Brutal",
         "descricao": "Se fizer um teste de Intimidação para assustar uma criatura na qual tenha causado dano desde a última rodada, você recebe +5 no teste e ela fica apavorada se você passar por 5 ou mais (em vez de 10 ou mais)."
+      },
+      {
+        "nome": "Furtividade Murídea - DB 212 -",
+        "descricao": "Você é ágil e esguio, difícil de capturar. Para o bônus de Furtividade concedido pelo seu tamanho, você é considerado uma categoria de tamanho menor. Pré-requisito: nezumi.",
+      },
+      {
+        "nome": "Papinho - DB 212 -",
+        "descricao": "Goblins costumam saber se virar para se aproveitar dos outros e conseguir o que querem, mas você foi além. Escolha uma perícia de Carisma. Você muda o atributo-chave dessa perícia para Inteligência. Pré-requisito: goblin.",
+      },
+      {
+        "nome": "Táticas Hobgoblin - DB 212 -",
+        "descricao": "Táticas Hobgoblin Muitas gerações de hobgoblins fizeram parte da Infinita Guerra contra os elfos. Quando usa Guerra para analisar terreno, você também pode descobrir uma brecha na organização tática dos seus oponentes. Se passar, o alvo do seu próximo ataque corpo a corpo é considerado desprevenido. Pré-requisito: hobgoblin.",
       }
     ]
   },

@@ -67,7 +67,7 @@ export default function Classes() {
             <span className="classes__hero-diamond" />
           </div>
           <p className="classes__hero-desc">
-            Vocações, ofícios e caminhos de vida dos heróis de Arton
+            Acervo com Poderes do livro básico + Heróis de arton + DB 212
           </p>
         </div>
       </section>

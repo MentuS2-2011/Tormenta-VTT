@@ -91,6 +91,10 @@ export const paladino = {
     { nome: "Rajada Divina", descricao: "Quando faz um Golpe Divino com Luz Purificadora, você pode gastar +1 PM para aumentar o alcance desse ataque para curto (ele ainda conta como um ataque corpo a corpo). Pré-requisito: Luz Purificadora." },
     { nome: "Sacrifício", descricao: "Uma vez por rodada, quando faz um ataque corpo a corpo, você pode sacrificar 5 PV por patamar para aumentar o dano desse ataque em +1d10 por patamar. Por exemplo, se você for um personagem de 5º nível, pode perder 10 PV para causar +2d10 pontos de dano." },
     { nome: "Sentença Dobrada", descricao: "Quando profere um julgamento, você pode gastar +1 PM para proferir um segundo julgamento com a mesma ação (pagando o custo de ambos)." },
-    { nome: "Virtude Paladinesca: Paciência", descricao: "Em combate, você pode ficar uma rodada inteira em meditação, sem fazer ações (exceto reações), para receber +2 em testes de perícia e na Defesa até o fim da cena." }
+    { nome: "Virtude Paladinesca: Paciência", descricao: "Em combate, você pode ficar uma rodada inteira em meditação, sem fazer ações (exceto reações), para receber +2 em testes de perícia e na Defesa até o fim da cena." },
+
+    { nome: "Aura de Arrependimento - DB 212 -", descricao: "Você foi criado para proteger os inocentes a todo custo. Enquanto sua aura estiver ativa, você pode gastar 2 PM no início de cada um dos seus turnos. Em cada rodada que fizer isso, toda vez que um inimigo dentro da aura atacar, ele deve fazer um teste de Vontade (CD Car). Se falhar, fica atordoado por uma rodada. Uma criatura só pode ser atordoada por este poder uma vez por cena. Pré-requisitos: golem, Julgamento Divino: Arrependimento, 6º nível de paladino." },
+    { nome: "Devoção de Muitos - DB 212 -", descricao: "Como paladino escolhido por sua divindade, vocês não sofrem mais os efeitos da habilidade de raça Sensibilidade a Luz e se tornam imunes a ofuscado. Pré-requisitos: kobolds, Fulgor Divino." },
+    { nome: "Protetor - DB 212 -", descricao: "Minotauros cruéis oprimem, minotauros bondosos protegem. Uma vez por rodada, quando um aliado adjacente sofrer um ataque, você pode gastar 1 PM como uma reação para se tornar o alvo do ataque. Pré-requisito: minotauro." }
   ]
 }
