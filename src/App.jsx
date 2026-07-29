@@ -12,8 +12,8 @@ import Profile from './pages/Profile'
 import Mesas   from './pages/Mesas'
 import Livros  from './pages/Livro'
 import MesaJogo from './pages/vtt/MesaJogo'
+import Classes    from './pages/Classes'
 // import Racas      from './pages/Racas'
-// import Classes    from './pages/Classes'
 // import Divindades from './pages/Divindades'
 // import Origens    from './pages/Origens'
 
@@ -90,7 +90,7 @@ export default function App() {
           <Route path="/livros"   element={<Livros />} />
           
           <Route path="/racas"      element={<Placeholder page="Raças" />} />
-          <Route path="/classes"    element={<Placeholder page="Classes" />} />
+          <Route path="/classes"    element={<Classes />} />
           <Route path="/divindades" element={<Placeholder page="Divindades" />} />
           <Route path="/origens"    element={<Placeholder page="Origens" />} />
           <Route path="*"         element={<NotFound />} />
