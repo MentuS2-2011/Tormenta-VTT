@@ -12,6 +12,7 @@ import { alquimista } from './classes/alquimista'
 import { treinador } from './classes/treinador'
 import { inovador } from './classes/inovador'
 import { ladino } from './classes/ladino'
+import { vassalo } from './classes/vassalo'
 
 export const classesData = [
   guerreiro,
@@ -27,5 +28,6 @@ export const classesData = [
   paladino,
   santo,
   samurai,
-  cavaleiro
+  cavaleiro,
+  vassalo 
 ];
