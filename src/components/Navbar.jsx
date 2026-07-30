@@ -75,6 +75,12 @@ export default function Navbar({ user = null, onLogout }) {
           </li>
           <li className="navbar__sep" aria-hidden="true">✦</li>
           <li>
+            <Link to="/personagens" className={`navbar__link ${isActive('/personagens') ? 'navbar__link--active' : ''}`}>
+              Personagens
+            </Link>
+          </li>
+          <li className="navbar__sep" aria-hidden="true">✦</li>
+          <li>
             <Link to="/livros" className={`navbar__link ${isActive('/livros') ? 'navbar__link--active' : ''}`}>
               Livros
             </Link>
@@ -174,6 +180,10 @@ export default function Navbar({ user = null, onLogout }) {
 
             <Link to="/mesas" className="navbar__mobile-link" onClick={closeAll}>
               <GiCrossedSwords size={14} aria-hidden="true" /> Mesas
+            </Link>
+
+            <Link to="/personagens" className="navbar__mobile-link" onClick={closeAll}>
+              <FiUser size={14} aria-hidden="true" /> Personagens
             </Link>
 
             <Link to="/livros" className="navbar__mobile-link" onClick={closeAll}>

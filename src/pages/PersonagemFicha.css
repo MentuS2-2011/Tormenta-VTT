@@ -1,0 +1,339 @@
+/* PersonagemFicha.css */
+
+.pficha {
+  padding-bottom: 4rem;
+}
+
+.pficha__not-found {
+  padding: 4rem 0;
+  text-align: center;
+  color: var(--clr-text-muted);
+}
+
+.pficha__back-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 1rem;
+  color: var(--clr-gold);
+}
+
+.pficha__topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 1.5rem 0;
+}
+
+.pficha__back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: transparent;
+  border: none;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  font-family: var(--font-display);
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+.pficha__back:hover {
+  color: var(--clr-text);
+}
+
+.pficha__topbar-actions {
+  display: flex;
+  gap: 10px;
+}
+
+.pficha__action {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: var(--font-display);
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  padding: 9px 18px;
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border-light);
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  border-radius: var(--radius-sm);
+  transition: all var(--transition);
+}
+
+.pficha__action:hover:not(:disabled) {
+  border-color: var(--clr-gold);
+  color: var(--clr-text);
+}
+
+.pficha__action--primary {
+  background: var(--clr-red-dark);
+  border-color: var(--clr-red);
+  color: #F0D4A0;
+}
+
+.pficha__action--primary:hover:not(:disabled) {
+  background: var(--clr-red);
+}
+
+.pficha__action:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+/* ── CABEÇALHO ── */
+.pficha__header {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  padding-bottom: 2rem;
+  border-bottom: 1px solid var(--clr-border-light);
+  flex-wrap: wrap;
+}
+
+.pficha__image-wrap {
+  width: 120px;
+  height: 120px;
+  border-radius: 50%;
+  overflow: hidden;
+  border: 2px solid var(--clr-gold);
+  flex-shrink: 0;
+  background: var(--clr-surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.pficha__image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.pficha__image-placeholder {
+  font-size: 44px;
+  opacity: 0.4;
+}
+
+.pficha__name {
+  font-family: var(--font-display);
+  font-size: clamp(26px, 4vw, 38px);
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+.pficha__subtitle {
+  font-size: 15px;
+  color: var(--clr-text-muted);
+  margin-top: 4px;
+}
+
+.pficha__extra {
+  font-size: 13px;
+  font-style: italic;
+  color: var(--clr-text-faint);
+  margin-top: 4px;
+}
+
+/* ── STATS EDITÁVEIS ── */
+.pficha__stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 1rem;
+  padding: 2rem 0;
+}
+
+.pficha__stat-card {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border-light);
+  padding: 1.1rem 1.25rem;
+  border-radius: var(--radius-sm);
+}
+
+.pficha__stat-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font-display);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--clr-text-faint);
+}
+
+.pficha__stat-head svg {
+  color: var(--clr-red-light);
+  font-size: 18px;
+}
+
+.pficha__stat-editors {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.pficha__stat-editors label {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  font-size: 9.5px;
+  letter-spacing: 0.05em;
+  text-transform: uppercase;
+  color: var(--clr-text-faint);
+}
+
+.pficha__stat-editors input {
+  width: 64px;
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--clr-gold);
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px;
+}
+
+.pficha__stat-editors input:focus {
+  outline: none;
+  border-color: var(--clr-gold);
+}
+
+.pficha__stat-max {
+  font-size: 12px;
+  color: var(--clr-text-faint);
+  align-self: flex-end;
+  margin-bottom: 6px;
+}
+
+.pficha__defense-value {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 700;
+  color: var(--clr-gold);
+}
+
+.pficha__defense-breakdown {
+  font-size: 11.5px;
+  color: var(--clr-text-faint);
+  line-height: 1.5;
+}
+
+/* ── SEÇÕES ── */
+.pficha__section {
+  padding: 1.5rem 0;
+}
+
+.pficha__section-title {
+  font-family: var(--font-display);
+  font-size: 13px;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--clr-red-light);
+  border-bottom: 1px solid var(--clr-border-light);
+  padding-bottom: 0.6rem;
+  margin-bottom: 1.25rem;
+}
+
+.pficha__attrs {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.75rem;
+}
+
+.pficha__attr {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border-light);
+  padding: 0.75rem 0.5rem;
+  border-radius: var(--radius-sm);
+}
+
+.pficha__attr-key {
+  font-family: var(--font-display);
+  font-size: 10px;
+  color: var(--clr-gold);
+  letter-spacing: 0.06em;
+}
+
+.pficha__attr-val {
+  font-family: var(--font-display);
+  font-size: 20px;
+  font-weight: 700;
+  color: var(--clr-text);
+}
+
+.pficha__attr-name {
+  font-size: 9.5px;
+  color: var(--clr-text-faint);
+}
+
+.pficha__skills {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 6px;
+}
+
+.pficha__skill {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 7px 12px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border-light);
+  border-radius: var(--radius-sm);
+  color: var(--clr-text-faint);
+  font-size: 13px;
+}
+
+.pficha__skill--trained {
+  color: var(--clr-text);
+  border-color: var(--clr-gold);
+}
+
+.pficha__skill-dot {
+  color: var(--clr-gold);
+  font-size: 10px;
+}
+
+.pficha__skill-name {
+  flex: 1;
+}
+
+.pficha__skill-bonus {
+  font-family: var(--font-display);
+  font-weight: 700;
+  color: var(--clr-gold);
+}
+
+.pficha__historia {
+  font-family: var(--font-body);
+  font-size: 15.5px;
+  line-height: 1.8;
+  color: var(--clr-text);
+  border-left: 3px solid var(--clr-red);
+  padding-left: 1.25rem;
+  white-space: pre-wrap;
+}
+
+@media (max-width: 600px) {
+  .pficha__stats {
+    grid-template-columns: 1fr;
+  }
+}

@@ -13,6 +13,9 @@ import Mesas   from './pages/Mesas'
 import Livros  from './pages/Livro'
 import MesaJogo from './pages/vtt/MesaJogo'
 import Classes    from './pages/Classes'
+import Personagens from './pages/Personagens'
+import PersonagemCriar from './pages/PersonagemCriar'
+import PersonagemFicha from './pages/PersonagemFicha'
 // import Racas      from './pages/Racas'
 // import Divindades from './pages/Divindades'
 // import Origens    from './pages/Origens'
@@ -88,6 +91,11 @@ export default function App() {
           <Route path="/mesas"    element={user ? <Mesas /> : <Navigate to="/login" replace />} />
           <Route path="/mesa/:id" element={user ? <MesaJogo /> : <Navigate to="/login" replace />} />
           <Route path="/livros"   element={<Livros />} />
+
+          <Route path="/personagens"          element={<Personagens />} />
+          <Route path="/personagens/novo"     element={<PersonagemCriar />} />
+          <Route path="/personagens/:id"      element={<PersonagemFicha />} />
+          <Route path="/personagens/:id/editar" element={<PersonagemCriar />} />
           
           <Route path="/racas"      element={<Placeholder page="Raças" />} />
           <Route path="/classes"    element={<Classes />} />
