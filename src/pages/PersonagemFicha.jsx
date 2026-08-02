@@ -6,7 +6,7 @@ import { FiEdit2, FiDownload, FiArrowLeft } from 'react-icons/fi'
 import { GiHearts, GiPowerLightning, GiShield } from 'react-icons/gi'
 import { obterPersonagem, salvarPersonagem } from '../lib/personagensStorage'
 import { exportarPersonagemPdf } from '../lib/personagemPdf'
-import { ATTR_KEYS, ATTR_LABELS, SKILLS } from '../data/personagemRules'
+import { ATTR_KEYS, ATTR_LABELS, SKILLS, AGE_BASICO, AGE_HEROIS, COMPLICACOES_IDADE } from '../data/personagemRules'
 import { calcularBonusPericia, calcularNivelTotal } from '../lib/personagemCalc'
 import './PersonagemFicha.css'
 
@@ -60,6 +60,16 @@ export default function PersonagemFicha() {
   const pvAtual = personagem.pvAtual ?? personagem.pv
   const pmAtual = personagem.pmAtual ?? personagem.pm
 
+  const faixaEtaria = personagem.ageMode === 'basico'
+    ? AGE_BASICO[personagem.ageKey]
+    : personagem.ageMode === 'herois'
+      ? AGE_HEROIS[personagem.ageKey]
+      : null
+
+  const complicacoesEscolhidas = (personagem.complicacoesIdade || [])
+    .map((key) => COMPLICACOES_IDADE.find((c) => c.key === key))
+    .filter(Boolean)
+
   return (
     <div className="pficha">
       <div className="container pficha__topbar">
@@ -83,7 +93,7 @@ export default function PersonagemFicha() {
         <div className="pficha__identity">
           <h1 className="pficha__name">{personagem.nome}</h1>
           <p className="pficha__subtitle">
-            {personagem.raca || '—'} · {classesLabel || '—'} · Nível Total {nivelTotal}
+            {personagem.sexo ? `${personagem.sexo} · ` : ''}{personagem.raca || '—'} · {classesLabel || '—'} · Nível Total {nivelTotal}
           </p>
           {(personagem.divindade || personagem.origem) && (
             <p className="pficha__extra">
@@ -91,6 +101,9 @@ export default function PersonagemFicha() {
               {personagem.divindade && personagem.origem && ' · '}
               {personagem.origem && <>Origem: {personagem.origem}</>}
             </p>
+          )}
+          {faixaEtaria && (
+            <p className="pficha__extra">Faixa etária: {faixaEtaria.label}</p>
           )}
         </div>
       </div>
@@ -156,6 +169,20 @@ export default function PersonagemFicha() {
         </div>
       </div>
 
+      {complicacoesEscolhidas.length > 0 && (
+        <div className="container pficha__section">
+          <h2 className="pficha__section-title">Complicações de Idade</h2>
+          <div className="pficha__complicacoes-list">
+            {complicacoesEscolhidas.map((c) => (
+              <div key={c.key} className="pficha__complicacao-item">
+                <h4>{c.nome}</h4>
+                <p>{c.descricao}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       <div className="container pficha__section">
         <h2 className="pficha__section-title">Atributos</h2>
         <div className="pficha__attrs">
@@ -175,7 +202,7 @@ export default function PersonagemFicha() {
           {SKILLS.map((s) => {
             const treinada = treinadas.includes(s.key)
             const bonus = calcularBonusPericia(s.key, {
-              atributosFinal, treinadas, racaNome: personagem.raca, nivel: nivelTotal
+              atributosFinal, treinadas, racaNome: personagem.raca, nivel: nivelTotal, outros: personagem.periciaOutros
             })
             return (
               <div key={s.key} className={`pficha__skill ${treinada ? 'pficha__skill--trained' : ''}`}>
@@ -188,6 +215,40 @@ export default function PersonagemFicha() {
         </div>
       </div>
 
+      {(personagem.inventario || []).length > 0 && (
+        <div className="container pficha__section">
+          <h2 className="pficha__section-title">Inventário</h2>
+          <div className="pficha__item-grid">
+            {personagem.inventario.map((it, i) => (
+              <div key={i} className="pficha__item">
+                <div className="pficha__item-head">
+                  <h4>{it.nome}</h4>
+                  <div className="pficha__item-tags">
+                    {it.vestido && <span className="pficha__item-tag pficha__item-tag--worn">Equipado</span>}
+                    <span className="pficha__item-tag">{it.espacos ?? 0} esp.</span>
+                  </div>
+                </div>
+                {it.descricao && <p>{it.descricao}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {(personagem.habilidades || []).length > 0 && (
+        <div className="container pficha__section">
+          <h2 className="pficha__section-title">Habilidades</h2>
+          <div className="pficha__item-grid">
+            {personagem.habilidades.map((h, i) => (
+              <div key={i} className="pficha__item">
+                <h4>{h.nome}</h4>
+                {h.descricao && <p>{h.descricao}</p>}
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {personagem.historia && (
         <div className="container pficha__section">
           <h2 className="pficha__section-title">História</h2>
@@ -196,4 +257,4 @@ export default function PersonagemFicha() {
       )}
     </div>
   )
-} 
+}

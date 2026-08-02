@@ -1,6 +1,6 @@
 // personagemPdf.js — exporta a ficha em PDF com o visual do site (dourado/vinho sobre fundo escuro)
 import { jsPDF } from 'jspdf'
-import { ATTR_KEYS, ATTR_LABELS, SKILLS } from '../data/personagemRules'
+import { ATTR_KEYS, ATTR_LABELS, SKILLS, COMPLICACOES_IDADE as COMPLICACOES } from '../data/personagemRules'
 import { calcularBonusPericia } from './personagemCalc'
 
 const DARK = [26, 20, 18]
@@ -83,7 +83,7 @@ export async function exportarPersonagemPdf(personagem) {
   fnt('bold', 16); tc(...GOLD)
   pdf.text(personagem.nome || 'Sem Nome', infoX, y + 8)
   fnt('normal', 9.5); tc(...TEXT)
-  pdf.text(`${personagem.raca || '—'} · ${classesLabel || '—'} · Nível ${nivelTotal}`, infoX, y + 15)
+  pdf.text(`${personagem.sexo ? personagem.sexo + ' · ' : ''}${personagem.raca || '—'} · ${classesLabel || '—'} · Nível ${nivelTotal}`, infoX, y + 15)
   fnt('italic', 8.5); tc(...MUTED)
   pdf.text(`${personagem.divindade ? 'Devoto de ' + personagem.divindade : 'Sem devoção declarada'}`, infoX, y + 21)
   if (personagem.origem) pdf.text(`Origem: ${personagem.origem}`, infoX, y + 26)
@@ -139,7 +139,8 @@ export async function exportarPersonagemPdf(personagem) {
       atributosFinal: personagem.atributosFinais || {},
       treinadas,
       racaNome: personagem.raca,
-      nivel: nivelTotal
+      nivel: nivelTotal,
+      outros: personagem.periciaOutros
     })
   }))
 
@@ -165,6 +166,62 @@ export async function exportarPersonagemPdf(personagem) {
     })
   })
   y += half * rowH + 6
+
+  function ensureSpace(minH) {
+    if (y + minH > PH - 16) { pdf.addPage(); background(); y = 16 }
+  }
+
+  function listSection(title, items, getNome, getDesc, getTag) {
+    if (!items || !items.length) return
+    ensureSpace(20)
+    y = sectionBar(title, y)
+    items.forEach((item) => {
+      const nome = getNome(item)
+      const desc = getDesc ? getDesc(item) : ''
+      const tag = getTag ? getTag(item) : ''
+      fnt('bold', 8)
+      const lines = desc ? pdf.splitTextToSize(desc, TW - 8) : []
+      const boxH = 6 + lines.length * 4 + 2
+      ensureSpace(boxH + 2)
+      panel(ML, y, TW, boxH)
+      fill(...GOLD_DARK); pdf.rect(ML, y, 1.2, boxH, 'F')
+      tc(...GOLD)
+      pdf.text(nome, ML + 4, y + 5)
+      if (tag) {
+        fnt('normal', 6.5); tc(...MUTED)
+        pdf.text(tag, PW - MR - 3, y + 5, { align: 'right' })
+      }
+      fnt('normal', 7.5); tc(...TEXT)
+      lines.forEach((line, i) => pdf.text(line, ML + 4, y + 9.5 + i * 4, { maxWidth: TW - 8 }))
+      y += boxH + 3
+    })
+    y += 3
+  }
+
+  // ═══ COMPLICAÇÕES DE IDADE ═══
+  listSection(
+    'Complicações de Idade',
+    personagem.complicacoesIdade?.map((key) => COMPLICACOES.find((c) => c.key === key)).filter(Boolean),
+    (c) => c.nome,
+    (c) => c.descricao
+  )
+
+  // ═══ INVENTÁRIO ═══
+  listSection(
+    'Inventário',
+    personagem.inventario,
+    (it) => it.nome,
+    (it) => it.descricao,
+    (it) => `${it.vestido ? 'Equipado · ' : ''}${it.espacos ?? 0} esp.`
+  )
+
+  // ═══ HABILIDADES ═══
+  listSection(
+    'Habilidades',
+    personagem.habilidades,
+    (h) => h.nome,
+    (h) => h.descricao
+  )
 
   // ═══ HISTÓRIA ═══
   const historia = (personagem.historia || '').trim()

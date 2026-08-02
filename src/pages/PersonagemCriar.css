@@ -589,6 +589,126 @@
   flex: none !important;
 }
 
+/* ── COMPLICAÇÕES DE IDADE ── */
+.pcriar__complicacoes {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.pcriar__complicacao {
+  font-size: 11.5px;
+  padding: 6px 12px;
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border-light);
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  border-radius: 999px;
+  transition: all var(--transition);
+}
+
+.pcriar__complicacao:hover {
+  border-color: var(--clr-red);
+}
+
+.pcriar__complicacao--active {
+  background: rgba(139, 26, 26, 0.18);
+  border-color: var(--clr-red);
+  color: var(--clr-red-light);
+}
+
+/* ── PERÍCIAS (linha com campo "outros") ── */
+.pcriar__skill-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border-light);
+  border-radius: var(--radius-sm);
+  padding: 4px 8px 4px 4px;
+  transition: all var(--transition);
+}
+
+.pcriar__skill-row--active {
+  background: rgba(160, 120, 48, 0.12);
+  border-color: var(--clr-gold);
+}
+
+.pcriar__skill-toggle {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  flex: 1;
+  background: transparent;
+  border: none;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  text-align: left;
+  padding: 4px 6px;
+}
+
+.pcriar__skill-row--active .pcriar__skill-toggle {
+  color: var(--clr-text);
+}
+
+.pcriar__skill-outros {
+  width: 42px;
+  font-size: 12px;
+  text-align: center;
+  padding: 4px;
+  background: var(--clr-surface);
+  border: 1px solid var(--clr-border-light);
+  border-radius: 4px;
+  color: var(--clr-text);
+}
+
+/* ── INVENTÁRIO / HABILIDADES ── */
+.pcriar__item-list {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin-bottom: 1rem;
+}
+
+.pcriar__item-card {
+  background: var(--clr-bg);
+  border: 1px solid var(--clr-border-light);
+  border-radius: var(--radius-sm);
+  padding: 0.9rem;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.pcriar__item-row {
+  display: flex;
+  gap: 8px;
+}
+
+.pcriar__item-row .pcriar__input {
+  flex: 1;
+}
+
+.pcriar__item-espacos {
+  max-width: 100px;
+  flex: none !important;
+}
+
+.pcriar__checkbox {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 12.5px;
+  color: var(--clr-text-muted);
+  cursor: pointer;
+  width: fit-content;
+}
+
+.pcriar__checkbox input {
+  accent-color: var(--clr-red);
+}
+
 /* ── NAVEGAÇÃO ── */
 .pcriar__nav {
   display: flex;

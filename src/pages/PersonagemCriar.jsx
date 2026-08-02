@@ -5,17 +5,18 @@ import { FiChevronLeft, FiChevronRight, FiUpload, FiX, FiCheck, FiHelpCircle, Fi
 import { GiScrollUnfurled } from 'react-icons/gi'
 import {
   ATTR_KEYS, ATTR_LABELS, ATTR_MIN, ATTR_MAX,
-  RACES, AGE, SIZES, SKILLS, CLASS_NAMES, CLASSES
+  RACES, SEXO_OPTIONS, AGE_MODES, AGE_BASICO, AGE_HEROIS, COMPLICACOES_IDADE,
+  SIZES, SKILLS, CLASS_NAMES, CLASSES
 } from '../data/personagemRules'
 import {
   atributosFinais, calcularPV, calcularPM, calcularDefesa,
-  calcularBonusPericia, calcularNivelTotal
+  calcularBonusPericia, calcularNivelTotal, efeitosIdade, tamanhoEfetivo
 } from '../lib/personagemCalc'
 import { salvarPersonagem, obterPersonagem } from '../lib/personagensStorage'
 import { lerImagemComoDataUrl } from '../lib/imagemUtils'
 import './PersonagemCriar.css'
 
-const STEPS = ['Identidade', 'Raça', 'Classes', 'Atributos', 'Combate', 'Perícias', 'Finalizar']
+const STEPS = ['Identidade', 'Raça', 'Classes', 'Atributos', 'Combate', 'Perícias', 'Inventário', 'Habilidades', 'Finalizar']
 
 const BASE_ATTR = { FOR: 0, DES: 0, CON: 0, INT: 0, SAB: 0, CAR: 0 }
 
@@ -23,8 +24,11 @@ function novoForm() {
   return {
     id: null,
     nome: '',
+    sexo: '',
     imagem: '',
-    idade: 'none',
+    ageMode: 'nenhuma',
+    ageKey: '',
+    complicacoesIdade: [],
     tamanho: 'medio',
     raca: '',
     racaEscolhas: [],
@@ -34,6 +38,9 @@ function novoForm() {
     atributoDefesa: 'DES',
     bonusDefesa: [],
     treinadas: [],
+    periciaOutros: {},
+    inventario: [],
+    habilidades: [],
     divindade: '',
     origem: '',
     historia: '',
@@ -63,8 +70,11 @@ export default function PersonagemCriar() {
         setForm({
           id: existente.id,
           nome: existente.nome || '',
+          sexo: existente.sexo || '',
           imagem: existente.imagem || '',
-          idade: existente.idade || 'none',
+          ageMode: existente.ageMode || 'nenhuma',
+          ageKey: existente.ageKey || '',
+          complicacoesIdade: existente.complicacoesIdade || [],
           tamanho: existente.tamanho || 'medio',
           raca: existente.raca || '',
           racaEscolhas: existente.racaEscolhas || [],
@@ -74,6 +84,9 @@ export default function PersonagemCriar() {
           atributoDefesa: existente.atributoDefesa || 'DES',
           bonusDefesa: existente.bonusDefesa || [],
           treinadas: existente.treinadas || [],
+          periciaOutros: existente.periciaOutros || {},
+          inventario: existente.inventario || [],
+          habilidades: existente.habilidades || [],
           divindade: existente.divindade || '',
           origem: existente.origem || '',
           historia: existente.historia || '',
@@ -89,20 +102,32 @@ export default function PersonagemCriar() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id])
 
+  const efeitosIdadeAtual = useMemo(() => efeitosIdade(form.ageMode, form.ageKey), [form.ageMode, form.ageKey])
+
   const atributosFinal = useMemo(
-    () => atributosFinais(form.atributosBase, form.raca, form.racaEscolhas, form.idade),
-    [form.atributosBase, form.raca, form.racaEscolhas, form.idade]
+    () => atributosFinais(form.atributosBase, form.raca, form.racaEscolhas, form.ageMode, form.ageKey),
+    [form.atributosBase, form.raca, form.racaEscolhas, form.ageMode, form.ageKey]
+  )
+
+  const tamanhoUsado = useMemo(
+    () => tamanhoEfetivo(form.tamanho, efeitosIdadeAtual.tamanhoMenor),
+    [form.tamanho, efeitosIdadeAtual]
   )
 
   const nivelTotal = useMemo(() => calcularNivelTotal(form.classes), [form.classes])
   const pv = useMemo(() => calcularPV(form.classes, atributosFinal, form.atributoPV), [form.classes, atributosFinal, form.atributoPV])
-  const pm = useMemo(() => calcularPM(form.classes, atributosFinal), [form.classes, atributosFinal])
+  const pm = useMemo(
+    () => calcularPM(form.classes, atributosFinal, efeitosIdadeAtual.pmBonus),
+    [form.classes, atributosFinal, efeitosIdadeAtual]
+  )
   const defesa = useMemo(
-    () => calcularDefesa(atributosFinal, form.tamanho, form.atributoDefesa, form.bonusDefesa),
-    [atributosFinal, form.tamanho, form.atributoDefesa, form.bonusDefesa]
+    () => calcularDefesa(atributosFinal, tamanhoUsado, form.atributoDefesa, form.bonusDefesa, efeitosIdadeAtual.defesaBonus),
+    [atributosFinal, tamanhoUsado, form.atributoDefesa, form.bonusDefesa, efeitosIdadeAtual]
   )
 
   const racaAtual = RACES[form.raca]
+  const faixaEtariaAtual = form.ageMode === 'basico' ? AGE_BASICO[form.ageKey] : form.ageMode === 'herois' ? AGE_HEROIS[form.ageKey] : null
+  const complicacoesNecessarias = form.ageMode === 'herois' ? (faixaEtariaAtual?.complicacoesQtd || 0) : 0
 
   function update(patch) {
     setForm((f) => ({ ...f, ...patch }))
@@ -137,6 +162,18 @@ export default function PersonagemCriar() {
     })
   }
 
+  function updatePericiaOutros(key, valor) {
+    setForm((f) => ({ ...f, periciaOutros: { ...f.periciaOutros, [key]: valor } }))
+  }
+
+  function toggleComplicacao(key) {
+    setForm((f) => {
+      const has = f.complicacoesIdade.includes(key)
+      if (has) return { ...f, complicacoesIdade: f.complicacoesIdade.filter((k) => k !== key) }
+      return { ...f, complicacoesIdade: [...f.complicacoesIdade, key] }
+    })
+  }
+
   // ── CLASSES (multiclasse) ──
   function updateClasseSlot(idx, patch) {
     setForm((f) => {
@@ -163,16 +200,33 @@ export default function PersonagemCriar() {
   function addBonusDefesa() {
     setForm((f) => ({ ...f, bonusDefesa: [...f.bonusDefesa, { nome: '', valor: 0 }] }))
   }
-
   function updateBonusDefesa(idx, patch) {
-    setForm((f) => ({
-      ...f,
-      bonusDefesa: f.bonusDefesa.map((b, i) => (i === idx ? { ...b, ...patch } : b))
-    }))
+    setForm((f) => ({ ...f, bonusDefesa: f.bonusDefesa.map((b, i) => (i === idx ? { ...b, ...patch } : b)) }))
   }
-
   function removeBonusDefesa(idx) {
     setForm((f) => ({ ...f, bonusDefesa: f.bonusDefesa.filter((_, i) => i !== idx) }))
+  }
+
+  // ── INVENTÁRIO ──
+  function addItem() {
+    setForm((f) => ({ ...f, inventario: [...f.inventario, { nome: '', descricao: '', vestido: false, espacos: 1 }] }))
+  }
+  function updateItem(idx, patch) {
+    setForm((f) => ({ ...f, inventario: f.inventario.map((it, i) => (i === idx ? { ...it, ...patch } : it)) }))
+  }
+  function removeItem(idx) {
+    setForm((f) => ({ ...f, inventario: f.inventario.filter((_, i) => i !== idx) }))
+  }
+
+  // ── HABILIDADES ──
+  function addHabilidade() {
+    setForm((f) => ({ ...f, habilidades: [...f.habilidades, { nome: '', descricao: '' }] }))
+  }
+  function updateHabilidade(idx, patch) {
+    setForm((f) => ({ ...f, habilidades: f.habilidades.map((h, i) => (i === idx ? { ...h, ...patch } : h)) }))
+  }
+  function removeHabilidade(idx) {
+    setForm((f) => ({ ...f, habilidades: f.habilidades.filter((_, i) => i !== idx) }))
   }
 
   async function handleImagemUpload(e) {
@@ -192,6 +246,10 @@ export default function PersonagemCriar() {
   function validarStep() {
     setErro('')
     if (step === 0 && !form.nome.trim()) { setErro('Dê um nome ao seu personagem.'); return false }
+    if (step === 0 && form.ageMode !== 'nenhuma' && !form.ageKey) { setErro('Escolha uma faixa etária.'); return false }
+    if (step === 0 && complicacoesNecessarias > 0 && form.complicacoesIdade.length !== complicacoesNecessarias) {
+      setErro(`Escolha exatamente ${complicacoesNecessarias} complicações de idade para essa faixa etária.`); return false
+    }
     if (step === 1 && !form.raca) { setErro('Escolha uma raça.'); return false }
     if (step === 1 && racaAtual?.variable && form.racaEscolhas.length !== 2) {
       setErro('Escolha 2 atributos diferentes para o bônus racial.'); return false
@@ -220,8 +278,11 @@ export default function PersonagemCriar() {
       const personagem = {
         id: form.id,
         nome: form.nome.trim(),
+        sexo: form.sexo,
         imagem: form.imagem,
-        idade: form.idade,
+        ageMode: form.ageMode,
+        ageKey: form.ageMode === 'nenhuma' ? '' : form.ageKey,
+        complicacoesIdade: form.complicacoesIdade,
         tamanho: form.tamanho,
         raca: form.raca,
         racaEscolhas: form.racaEscolhas,
@@ -232,6 +293,9 @@ export default function PersonagemCriar() {
         atributoDefesa: form.atributoDefesa,
         bonusDefesa: form.bonusDefesa.filter((b) => b.nome),
         treinadas: form.treinadas,
+        periciaOutros: form.periciaOutros,
+        inventario: form.inventario.filter((it) => it.nome),
+        habilidades: form.habilidades.filter((h) => h.nome),
         divindade: form.divindade,
         origem: form.origem,
         historia: form.historia,
@@ -276,7 +340,11 @@ export default function PersonagemCriar() {
           {erro && <div className="pcriar__erro">{erro}</div>}
 
           {step === 0 && (
-            <StepIdentidade form={form} update={update} onImagem={handleImagemUpload} imagemCarregando={imagemCarregando} />
+            <StepIdentidade
+              form={form} update={update} onImagem={handleImagemUpload} imagemCarregando={imagemCarregando}
+              faixaEtariaAtual={faixaEtariaAtual} complicacoesNecessarias={complicacoesNecessarias}
+              toggleComplicacao={toggleComplicacao}
+            />
           )}
           {step === 1 && (
             <StepRaca form={form} update={update} racaAtual={racaAtual} toggleRacaEscolha={toggleRacaEscolha} />
@@ -299,9 +367,18 @@ export default function PersonagemCriar() {
             />
           )}
           {step === 5 && (
-            <StepPericias form={form} toggleTreino={toggleTreino} atributosFinal={atributosFinal} nivelTotal={nivelTotal} />
+            <StepPericias
+              form={form} toggleTreino={toggleTreino} atributosFinal={atributosFinal} nivelTotal={nivelTotal}
+              updatePericiaOutros={updatePericiaOutros}
+            />
           )}
           {step === 6 && (
+            <StepInventario form={form} addItem={addItem} updateItem={updateItem} removeItem={removeItem} />
+          )}
+          {step === 7 && (
+            <StepHabilidades form={form} addHabilidade={addHabilidade} updateHabilidade={updateHabilidade} removeHabilidade={removeHabilidade} />
+          )}
+          {step === 8 && (
             <StepFinalizar form={form} update={update} pv={pv} pm={pm} defesa={defesa} atributosFinal={atributosFinal} nivelTotal={nivelTotal} />
           )}
         </div>
@@ -344,7 +421,7 @@ function AjudaClasseLink() {
 }
 
 // ── STEP 1: IDENTIDADE ──
-function StepIdentidade({ form, update, onImagem, imagemCarregando }) {
+function StepIdentidade({ form, update, onImagem, imagemCarregando, faixaEtariaAtual, complicacoesNecessarias, toggleComplicacao }) {
   return (
     <div className="pcriar__grid">
       <div className="pcriar__field-col">
@@ -357,15 +434,15 @@ function StepIdentidade({ form, update, onImagem, imagemCarregando }) {
           onChange={(e) => update({ nome: e.target.value })}
         />
 
-        <label className="pcriar__label">Idade</label>
+        <label className="pcriar__label">Sexo</label>
         <div className="pcriar__pills">
-          {Object.entries(AGE).map(([key, a]) => (
+          {SEXO_OPTIONS.map((s) => (
             <button
-              key={key}
-              className={`pcriar__pill ${form.idade === key ? 'pcriar__pill--active' : ''}`}
-              onClick={() => update({ idade: key })}
+              key={s}
+              className={`pcriar__pill ${form.sexo === s ? 'pcriar__pill--active' : ''}`}
+              onClick={() => update({ sexo: s })}
             >
-              {a.label}
+              {s}
             </button>
           ))}
         </div>
@@ -382,6 +459,71 @@ function StepIdentidade({ form, update, onImagem, imagemCarregando }) {
             </button>
           ))}
         </div>
+
+        <label className="pcriar__label">Regra de Idade</label>
+        <div className="pcriar__pills">
+          {AGE_MODES.map((m) => (
+            <button
+              key={m.key}
+              className={`pcriar__pill ${form.ageMode === m.key ? 'pcriar__pill--active' : ''}`}
+              onClick={() => update({ ageMode: m.key, ageKey: '', complicacoesIdade: [] })}
+            >
+              {m.label}
+            </button>
+          ))}
+        </div>
+
+        {form.ageMode === 'basico' && (
+          <div className="pcriar__pills" style={{ marginTop: '0.5rem' }}>
+            {Object.entries(AGE_BASICO).map(([key, a]) => (
+              <button
+                key={key}
+                className={`pcriar__pill ${form.ageKey === key ? 'pcriar__pill--active' : ''}`}
+                onClick={() => update({ ageKey: key })}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {form.ageMode === 'herois' && (
+          <div className="pcriar__pills" style={{ marginTop: '0.5rem' }}>
+            {Object.entries(AGE_HEROIS).map(([key, a]) => (
+              <button
+                key={key}
+                className={`pcriar__pill ${form.ageKey === key ? 'pcriar__pill--active' : ''}`}
+                onClick={() => update({ ageKey: key, complicacoesIdade: [] })}
+              >
+                {a.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {faixaEtariaAtual?.nota && (
+          <p className="pcriar__hint" style={{ marginTop: '0.75rem' }}>{faixaEtariaAtual.nota}</p>
+        )}
+
+        {complicacoesNecessarias > 0 && (
+          <>
+            <label className="pcriar__label">
+              Complicações de Idade ({form.complicacoesIdade.length} / {complicacoesNecessarias})
+            </label>
+            <div className="pcriar__complicacoes">
+              {COMPLICACOES_IDADE.map((c) => (
+                <button
+                  key={c.key}
+                  className={`pcriar__complicacao ${form.complicacoesIdade.includes(c.key) ? 'pcriar__complicacao--active' : ''}`}
+                  onClick={() => toggleComplicacao(c.key)}
+                  title={c.descricao}
+                >
+                  {c.nome}
+                </button>
+              ))}
+            </div>
+          </>
+        )}
       </div>
 
       <div className="pcriar__field-col pcriar__field-col--image">
@@ -598,28 +740,35 @@ function StepCombate({ form, update, pv, pm, defesa, addBonusDefesa, updateBonus
 }
 
 // ── STEP 6: PERÍCIAS ──
-function StepPericias({ form, toggleTreino, atributosFinal, nivelTotal }) {
+function StepPericias({ form, toggleTreino, atributosFinal, nivelTotal, updatePericiaOutros }) {
   return (
     <div>
       <p className="pcriar__hint">
-        Treinos usados: <strong className="pcriar__hint-good">{form.treinadas.length}</strong> (sem limite fixo — use bom senso com seu mestre)
+        Treinos usados: <strong className="pcriar__hint-good">{form.treinadas.length}</strong> (sem limite fixo — use bom senso com seu mestre).
+        Use o campo "Outros" para bônus manuais (itens, poderes etc.).
       </p>
       <div className="pcriar__skills-grid">
         {SKILLS.map((s) => {
           const treinada = form.treinadas.includes(s.key)
           const bonus = calcularBonusPericia(s.key, {
-            atributosFinal, treinadas: form.treinadas, racaNome: form.raca, nivel: nivelTotal || 1
+            atributosFinal, treinadas: form.treinadas, racaNome: form.raca, nivel: nivelTotal || 1, outros: form.periciaOutros
           })
           return (
-            <button
-              key={s.key}
-              className={`pcriar__skill ${treinada ? 'pcriar__skill--active' : ''}`}
-              onClick={() => toggleTreino(s.key)}
-            >
-              <span className="pcriar__skill-name">{s.name}</span>
-              <span className="pcriar__skill-attr">{s.attr}</span>
+            <div key={s.key} className={`pcriar__skill-row ${treinada ? 'pcriar__skill-row--active' : ''}`}>
+              <button className="pcriar__skill-toggle" onClick={() => toggleTreino(s.key)}>
+                <span className="pcriar__skill-name">{s.name}</span>
+                <span className="pcriar__skill-attr">{s.attr}</span>
+              </button>
+              <input
+                className="pcriar__skill-outros"
+                type="number"
+                title="Bônus de 'outros' (itens, poderes...)"
+                placeholder="0"
+                value={form.periciaOutros[s.key] || ''}
+                onChange={(e) => updatePericiaOutros(s.key, Number(e.target.value) || 0)}
+              />
               <span className="pcriar__skill-bonus">{bonus >= 0 ? '+' : ''}{bonus}</span>
-            </button>
+            </div>
           )
         })}
       </div>
@@ -627,7 +776,97 @@ function StepPericias({ form, toggleTreino, atributosFinal, nivelTotal }) {
   )
 }
 
-// ── STEP 7: FINALIZAR ──
+// ── STEP 7: INVENTÁRIO ──
+function StepInventario({ form, addItem, updateItem, removeItem }) {
+  return (
+    <div>
+      <p className="pcriar__hint">Adicione os itens que seu personagem carrega.</p>
+      <div className="pcriar__item-list">
+        {form.inventario.map((it, idx) => (
+          <div key={idx} className="pcriar__item-card">
+            <div className="pcriar__item-row">
+              <input
+                className="pcriar__input"
+                type="text"
+                placeholder="Nome do item"
+                value={it.nome}
+                onChange={(e) => updateItem(idx, { nome: e.target.value })}
+              />
+              <input
+                className="pcriar__input pcriar__item-espacos"
+                type="number"
+                min="0"
+                placeholder="Espaços"
+                value={it.espacos}
+                onChange={(e) => updateItem(idx, { espacos: Number(e.target.value) || 0 })}
+              />
+              <button className="pcriar__icon-btn" onClick={() => removeItem(idx)} title="Remover item">
+                <FiTrash2 />
+              </button>
+            </div>
+            <textarea
+              className="pcriar__textarea"
+              rows={2}
+              placeholder="Descrição do item..."
+              value={it.descricao}
+              onChange={(e) => updateItem(idx, { descricao: e.target.value })}
+            />
+            <label className="pcriar__checkbox">
+              <input
+                type="checkbox"
+                checked={it.vestido}
+                onChange={(e) => updateItem(idx, { vestido: e.target.checked })}
+              />
+              Vestido / equipado
+            </label>
+          </div>
+        ))}
+      </div>
+      <button className="pcriar__add-btn" onClick={addItem}>
+        <FiPlus /> Adicionar Item
+      </button>
+    </div>
+  )
+}
+
+// ── STEP 8: HABILIDADES ──
+function StepHabilidades({ form, addHabilidade, updateHabilidade, removeHabilidade }) {
+  return (
+    <div>
+      <p className="pcriar__hint">Registre poderes, talentos ou habilidades especiais do seu personagem.</p>
+      <div className="pcriar__item-list">
+        {form.habilidades.map((h, idx) => (
+          <div key={idx} className="pcriar__item-card">
+            <div className="pcriar__item-row">
+              <input
+                className="pcriar__input"
+                type="text"
+                placeholder="Nome da habilidade"
+                value={h.nome}
+                onChange={(e) => updateHabilidade(idx, { nome: e.target.value })}
+              />
+              <button className="pcriar__icon-btn" onClick={() => removeHabilidade(idx)} title="Remover habilidade">
+                <FiTrash2 />
+              </button>
+            </div>
+            <textarea
+              className="pcriar__textarea"
+              rows={2}
+              placeholder="Descrição da habilidade..."
+              value={h.descricao}
+              onChange={(e) => updateHabilidade(idx, { descricao: e.target.value })}
+            />
+          </div>
+        ))}
+      </div>
+      <button className="pcriar__add-btn" onClick={addHabilidade}>
+        <FiPlus /> Adicionar Habilidade
+      </button>
+    </div>
+  )
+}
+
+// ── STEP 9: FINALIZAR ──
 function StepFinalizar({ form, update, pv, pm, defesa, atributosFinal, nivelTotal }) {
   const classesLabel = form.classes
     .filter((c) => c.nome)
@@ -657,12 +896,15 @@ function StepFinalizar({ form, update, pv, pm, defesa, atributosFinal, nivelTota
         <label className="pcriar__label">Resumo</label>
         <div className="pcriar__summary">
           <div className="pcriar__summary-row"><span>Herói</span><strong>{form.nome || '—'}</strong></div>
+          <div className="pcriar__summary-row"><span>Sexo</span><strong>{form.sexo || '—'}</strong></div>
           <div className="pcriar__summary-row"><span>Raça</span><strong>{form.raca || '—'}</strong></div>
           <div className="pcriar__summary-row"><span>Classes</span><strong>{classesLabel || '—'}</strong></div>
           <div className="pcriar__summary-row"><span>Nível Total</span><strong>{nivelTotal}</strong></div>
           <div className="pcriar__summary-row"><span>PV</span><strong>{pv}</strong></div>
           <div className="pcriar__summary-row"><span>PM</span><strong>{pm}</strong></div>
           <div className="pcriar__summary-row"><span>Defesa</span><strong>{defesa}</strong></div>
+          <div className="pcriar__summary-row"><span>Itens</span><strong>{form.inventario.filter((i) => i.nome).length}</strong></div>
+          <div className="pcriar__summary-row"><span>Habilidades</span><strong>{form.habilidades.filter((h) => h.nome).length}</strong></div>
           <div className="pcriar__summary-attrs">
             {ATTR_KEYS.map((k) => (
               <span key={k}>{k} {atributosFinal[k] >= 0 ? '+' : ''}{atributosFinal[k]}</span>
